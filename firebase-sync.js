@@ -1,5 +1,6 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js';
 import {
+  initializeAuth,
   getAuth,
   GoogleAuthProvider,
   signInWithPopup,
@@ -7,8 +8,9 @@ import {
   getRedirectResult,
   onAuthStateChanged,
   signOut as firebaseSignOut,
-  setPersistence,
+  indexedDBLocalPersistence,
   browserLocalPersistence,
+  browserPopupRedirectResolver,
 } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js';
 import {
   getFirestore,
@@ -62,6 +64,18 @@ function formatAuthError(err) {
     'permission-denied': 'Firestore 权限不足，请检查是否已发布安全规则',
   };
   return map[code] || err?.message || '登录失败';
+}
+
+function initAuth(firebaseApp) {
+  try {
+    return initializeAuth(firebaseApp, {
+      persistence: [indexedDBLocalPersistence, browserLocalPersistence],
+      popupRedirectResolver: browserPopupRedirectResolver,
+    });
+  } catch (err) {
+    if (err?.code === 'auth/already-initialized') return getAuth(firebaseApp);
+    throw err;
+  }
 }
 
 function userDocRef(uid) {
@@ -205,21 +219,11 @@ async function signIn() {
   provider.setCustomParameters({ prompt: 'select_account' });
 
   try {
-    await setPersistence(auth, browserLocalPersistence);
     if (isMobile()) {
-      try {
-        await signInWithPopup(auth, provider);
-      } catch (popupErr) {
-        if (popupErr.code === 'auth/popup-blocked'
-          || popupErr.code === 'auth/operation-not-supported-in-this-environment') {
-          await signInWithRedirect(auth, provider);
-          return;
-        }
-        throw popupErr;
-      }
-    } else {
-      await signInWithPopup(auth, provider);
+      await signInWithRedirect(auth, provider);
+      return;
     }
+    await signInWithPopup(auth, provider);
   } catch (err) {
     updateStatus({ error: formatAuthError(err) });
     callbacks.toast?.(formatAuthError(err));
@@ -284,25 +288,38 @@ function init(options = {}) {
   }
 
   app = initializeApp(firebaseConfig);
-  auth = getAuth(app);
+  auth = initAuth(app);
   db = getFirestore(app);
-  updateStatus({ configured: true, error: isIosStandalone() ? 'iPhone 主屏幕内请改用 Safari 登录' : '' });
+  updateStatus({
+    configured: true,
+    syncing: true,
+    error: isIosStandalone() ? 'iPhone 主屏幕内请改用 Safari 登录' : '',
+  });
 
-  getRedirectResult(auth)
-    .then((result) => {
-      if (result?.user) callbacks.toast?.('登录成功');
-    })
-    .catch((err) => {
+  (async () => {
+    try {
+      const result = await getRedirectResult(auth);
+      if (result?.user) {
+        currentUser = result.user;
+        updateStatus({ signedIn: true, email: result.user.email || result.user.uid });
+        callbacks.toast?.('登录成功');
+        await mergeOnLogin();
+        startSnapshot();
+      }
+    } catch (err) {
       if (err?.code && err.code !== 'auth/no-auth-event') {
         updateStatus({ error: formatAuthError(err) });
         callbacks.toast?.(formatAuthError(err));
       }
-    });
+    } finally {
+      updateStatus({ syncing: false });
+    }
+  })();
 
   onAuthStateChanged(auth, async (user) => {
     currentUser = user;
     if (user) {
-      updateStatus({ signedIn: true, email: user.email || user.uid });
+      updateStatus({ signedIn: true, email: user.email || user.uid, error: '' });
       try {
         await mergeOnLogin();
         startSnapshot();
@@ -317,7 +334,7 @@ function init(options = {}) {
       }
       currentUser = null;
       lastPushedAt = '';
-      updateStatus({ signedIn: false, email: '', cloudUpdatedAt: '', syncing: false });
+      updateStatus({ signedIn: false, email: '', cloudUpdatedAt: '' });
     }
   });
 }
