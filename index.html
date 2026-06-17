@@ -219,6 +219,10 @@
     .chart-lbl { font-size: 0.62rem; color: var(--muted); }
     .sync-list { font-size: 0.85rem; padding-left: 18px; line-height: 1.6; }
     .sync-list code { font-size: 0.78rem; background: var(--bg2); padding: 1px 6px; border-radius: 4px; }
+    .cloud-badge { display: inline-block; font-size: 0.72rem; font-weight: 600; padding: 3px 8px; border-radius: 999px; margin-bottom: 8px; }
+    .cloud-badge.ok { background: var(--ok-soft); color: var(--ok); }
+    .cloud-badge.warn { background: var(--warn-soft); color: var(--warn); }
+    .cloud-badge.off { background: var(--bg2); color: var(--muted); }
   </style>
 </head>
 <body>
@@ -333,15 +337,26 @@
         </ul>
       </div>
       <div class="card">
-        <h3>跨设备同步</h3>
-        <p class="hint">数据存在各设备浏览器 localStorage，<b>不会自动同步</b>。换设备或换浏览器前请 Export，另一端 Import。</p>
+        <h3>Firestore 云同步</h3>
+        <p class="hint">Google 登录后，手机与电脑自动同步同一份数据（按 <code>_updatedAt</code> 取较新）。Export/Import 仍可作为备份。</p>
+        <span class="cloud-badge off" id="cloudBadge">未连接</span>
         <p class="hint" id="syncMeta"></p>
+        <p class="hint" id="cloudSyncDetail"></p>
+        <div class="row">
+          <button class="btn" id="btnCloudSignIn" onclick="GapCloudSync.signIn()">Google 登录</button>
+          <button class="btn secondary" id="btnCloudSignOut" onclick="GapCloudSync.signOut()" style="display:none">退出登录</button>
+          <button class="btn secondary" onclick="GapCloudSync.pullNow()">从云端拉取</button>
+          <button class="btn secondary" onclick="GapCloudSync.pushNow()">上传到云端</button>
+        </div>
+        <p class="hint" style="margin-top:10px">首次使用：填好 <code>firebase-config.js</code> → 控制台开启 Google 登录 → 部署 Firestore 规则 → 两端用<b>同一 Google 账号</b>登录。</p>
+      </div>
+      <div class="card">
+        <h3>手动备份（Export / Import）</h3>
         <div class="row">
           <button class="btn" onclick="exportData()">Export 文件</button>
           <button class="btn secondary" onclick="copyExport()">复制 JSON</button>
           <label class="btn secondary" style="cursor:pointer">Import<input type="file" accept=".json" id="importFile" hidden onchange="importData(event)" /></label>
         </div>
-        <p class="hint" style="margin-top:10px">建议节奏：每天结束 Export 一次 → AirDrop / 微信发给自己 → 另一设备 Import。以<b>最后一次 Import</b>为准。</p>
       </div>
     </section>
   </div>
@@ -366,6 +381,7 @@
     <button class="btn small secondary" onclick="document.getElementById('importFile').click()">Import</button>
   </footer>
   <div class="toast" id="toast"></div>
+  <script type="module" src="firebase-sync.js"></script>
 
   <script>
     const BODY_START = '2026-06-21';
@@ -614,6 +630,7 @@
     function persist(d) {
       d._updatedAt = new Date().toISOString();
       localStorage.setItem(KEY, JSON.stringify(d));
+      window.GapCloudSync?.schedulePush?.(d);
     }
     function toast(m) { const t = document.getElementById('toast'); t.textContent = m; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2000); }
     function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/'/g, '&#39;'); }
@@ -1482,17 +1499,75 @@
         toast('无法复制，已改为下载文件');
       }
     }
-    function renderSyncMeta() {
+    function renderSyncMeta(cloudStatus) {
       const el = document.getElementById('syncMeta');
-      if (!el) return;
+      const detail = document.getElementById('cloudSyncDetail');
+      const badge = document.getElementById('cloudBadge');
+      const btnIn = document.getElementById('btnCloudSignIn');
+      const btnOut = document.getElementById('btnCloudSignOut');
       const u = load()._updatedAt;
-      el.textContent = u ? `本机最后保存：${new Date(u).toLocaleString('zh-CN')}` : '本机尚无保存记录';
+      if (el) {
+        el.textContent = u
+          ? `本机最后保存：${new Date(u).toLocaleString('zh-CN')}`
+          : '本机尚无保存记录';
+      }
+      const st = cloudStatus || window.GapCloudSync?.getStatus?.() || {};
+      if (badge) {
+        if (!st.configured) {
+          badge.textContent = '未配置 Firebase';
+          badge.className = 'cloud-badge warn';
+        } else if (st.syncing) {
+          badge.textContent = '同步中…';
+          badge.className = 'cloud-badge warn';
+        } else if (st.signedIn) {
+          badge.textContent = '已连接云端';
+          badge.className = 'cloud-badge ok';
+        } else {
+          badge.textContent = '未登录';
+          badge.className = 'cloud-badge off';
+        }
+      }
+      if (detail) {
+        if (!st.configured) {
+          detail.textContent = '请编辑 firebase-config.js，填入 Firebase Web SDK 配置。';
+        } else if (st.signedIn) {
+          const cloud = st.cloudUpdatedAt
+            ? `云端最后保存：${new Date(st.cloudUpdatedAt).toLocaleString('zh-CN')}`
+            : '云端暂无记录';
+          detail.textContent = `${st.email || '已登录'} · ${cloud}${st.error ? ' · ' + st.error : ''}`;
+        } else {
+          detail.textContent = st.error || '登录 Google 账号后即可跨设备自动同步。';
+        }
+      }
+      if (btnIn && btnOut) {
+        btnIn.style.display = st.signedIn ? 'none' : '';
+        btnOut.style.display = st.signedIn ? '' : 'none';
+      }
     }
     function importData(e) {
       const f = e.target.files[0]; if (!f) return;
       const r = new FileReader();
-      r.onload = () => { try { localStorage.setItem(KEY, r.result); init(); toast('导入成功'); } catch { toast('失败'); } };
+      r.onload = () => {
+        try {
+          const parsed = ensureData(JSON.parse(r.result));
+          parsed._updatedAt = new Date().toISOString();
+          localStorage.setItem(KEY, JSON.stringify(parsed));
+          init();
+          window.GapCloudSync?.pushNow?.();
+          toast('导入成功');
+        } catch { toast('失败'); }
+      };
       r.readAsText(f); e.target.value = '';
+    }
+
+    function rerenderFromCloud() {
+      renderObjectives();
+      renderProgressSubNav();
+      renderProgress();
+      renderExecute();
+      loadFinance();
+      renderFinTable();
+      renderSyncMeta();
     }
 
     function initSelects() {
@@ -1547,6 +1622,13 @@
       loadFinance();
       renderFinTable();
       renderSyncMeta();
+      const cloudOpts = {
+        toast,
+        onRemoteUpdate: rerenderFromCloud,
+        onStatusChange: renderSyncMeta,
+      };
+      if (window.GapCloudSync?.init) window.GapCloudSync.init(cloudOpts);
+      else window.__pendingGapCloudInit = cloudOpts;
     }
     init();
   </script>
