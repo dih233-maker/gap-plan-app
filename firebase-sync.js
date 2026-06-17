@@ -7,6 +7,8 @@ import {
   getRedirectResult,
   onAuthStateChanged,
   signOut as firebaseSignOut,
+  setPersistence,
+  browserLocalPersistence,
 } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js';
 import {
   getFirestore,
@@ -41,6 +43,25 @@ const status = {
 
 function isMobile() {
   return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+}
+
+function isIosStandalone() {
+  return /iPhone|iPad|iPod/i.test(navigator.userAgent)
+    && (window.navigator.standalone === true
+      || window.matchMedia('(display-mode: standalone)').matches);
+}
+
+function formatAuthError(err) {
+  const code = err?.code || '';
+  const map = {
+    'auth/popup-blocked': '弹窗被拦截，请允许此网站弹窗，或改用 Safari 打开',
+    'auth/popup-closed-by-user': '登录窗口已关闭',
+    'auth/unauthorized-domain': '域名未授权，请在 Firebase 控制台添加 gap-plan-app.vercel.app',
+    'auth/operation-not-supported-in-this-environment': '当前环境不支持，请用 Safari 浏览器打开（不要从主屏幕图标）',
+    'auth/network-request-failed': '网络错误，请检查网络或关闭 VPN 后重试',
+    'permission-denied': 'Firestore 权限不足，请检查是否已发布安全规则',
+  };
+  return map[code] || err?.message || '登录失败';
 }
 
 function userDocRef(uid) {
@@ -172,13 +193,36 @@ async function signIn() {
     callbacks.toast?.('请先配置 firebase-config.js');
     return;
   }
+
+  if (isIosStandalone()) {
+    const msg = 'iPhone 主屏幕 App 内无法完成 Google 登录。请 Safari 地址栏打开 gap-plan-app.vercel.app#sync 登录。';
+    updateStatus({ error: msg });
+    callbacks.toast?.('请用 Safari 浏览器打开登录');
+    return;
+  }
+
   const provider = new GoogleAuthProvider();
+  provider.setCustomParameters({ prompt: 'select_account' });
+
   try {
-    if (isMobile()) await signInWithRedirect(auth, provider);
-    else await signInWithPopup(auth, provider);
+    await setPersistence(auth, browserLocalPersistence);
+    if (isMobile()) {
+      try {
+        await signInWithPopup(auth, provider);
+      } catch (popupErr) {
+        if (popupErr.code === 'auth/popup-blocked'
+          || popupErr.code === 'auth/operation-not-supported-in-this-environment') {
+          await signInWithRedirect(auth, provider);
+          return;
+        }
+        throw popupErr;
+      }
+    } else {
+      await signInWithPopup(auth, provider);
+    }
   } catch (err) {
-    updateStatus({ error: err.message || '登录失败' });
-    callbacks.toast?.('Google 登录失败');
+    updateStatus({ error: formatAuthError(err) });
+    callbacks.toast?.(formatAuthError(err));
     console.error(err);
   }
 }
@@ -242,9 +286,18 @@ function init(options = {}) {
   app = initializeApp(firebaseConfig);
   auth = getAuth(app);
   db = getFirestore(app);
-  updateStatus({ configured: true, error: '' });
+  updateStatus({ configured: true, error: isIosStandalone() ? 'iPhone 主屏幕内请改用 Safari 登录' : '' });
 
-  getRedirectResult(auth).catch((err) => console.error(err));
+  getRedirectResult(auth)
+    .then((result) => {
+      if (result?.user) callbacks.toast?.('登录成功');
+    })
+    .catch((err) => {
+      if (err?.code && err.code !== 'auth/no-auth-event') {
+        updateStatus({ error: formatAuthError(err) });
+        callbacks.toast?.(formatAuthError(err));
+      }
+    });
 
   onAuthStateChanged(auth, async (user) => {
     currentUser = user;

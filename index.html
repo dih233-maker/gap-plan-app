@@ -348,7 +348,8 @@
           <button class="btn secondary" onclick="GapCloudSync.pullNow()">从云端拉取</button>
           <button class="btn secondary" onclick="GapCloudSync.pushNow()">上传到云端</button>
         </div>
-        <p class="hint" style="margin-top:10px">首次使用：填好 <code>firebase-config.js</code> → 控制台开启 Google 登录 → 部署 Firestore 规则 → 两端用<b>同一 Google 账号</b>登录。</p>
+        <p class="hint" style="margin-top:10px"><b>iPhone 注意：</b>请用 <b>Safari 地址栏</b>打开 <code>gap-plan-app.vercel.app#sync</code> 登录，<b>不要</b>从「主屏幕图标」里点 Google 登录（会失败）。登录成功后再加主屏幕。</p>
+        <p class="hint" style="margin-top:6px">首次使用：控制台开启 Google 登录 + 发布 Firestore 规则 → 两端用<b>同一 Google 账号</b>登录。</p>
       </div>
       <div class="card">
         <h3>手动备份（Export / Import）</h3>
