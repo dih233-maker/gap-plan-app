@@ -223,6 +223,7 @@
     .cloud-badge.ok { background: var(--ok-soft); color: var(--ok); }
     .cloud-badge.warn { background: var(--warn-soft); color: var(--warn); }
     .cloud-badge.off { background: var(--bg2); color: var(--muted); }
+    .cloud-error { color: var(--danger); font-size: 0.82rem; line-height: 1.45; margin-top: 6px; }
   </style>
 </head>
 <body>
@@ -344,11 +345,12 @@
         <p class="hint" id="cloudSyncDetail"></p>
         <div class="row">
           <button class="btn" id="btnCloudSignIn" onclick="GapCloudSync.signIn()">Google 登录</button>
+          <button class="btn secondary" id="btnSafariLogin" onclick="GapCloudSync.openSafariLogin()">Safari 打开登录</button>
           <button class="btn secondary" id="btnCloudSignOut" onclick="GapCloudSync.signOut()" style="display:none">退出登录</button>
           <button class="btn secondary" onclick="GapCloudSync.pullNow()">从云端拉取</button>
           <button class="btn secondary" onclick="GapCloudSync.pushNow()">上传到云端</button>
         </div>
-        <p class="hint" style="margin-top:10px"><b>iPhone 注意：</b>请用 <b>Safari 地址栏</b>打开 <code>gap-plan-app.vercel.app#sync</code> 登录，<b>不要</b>从「主屏幕图标」里点 Google 登录（会失败）。登录成功后再加主屏幕。</p>
+        <p class="hint" style="margin-top:10px"><b>iPhone：</b>优先点 <b>Google 登录</b>（弹窗，与电脑相同）。若失败，点 <b>Safari 打开登录</b>。主屏幕图标与 Safari <b>登录状态不共享</b>——请在 Safari 登录后一直用 Safari 书签访问。</p>
         <p class="hint" style="margin-top:6px">首次使用：控制台开启 Google 登录 + 发布 Firestore 规则 → 两端用<b>同一 Google 账号</b>登录。</p>
       </div>
       <div class="card">
@@ -1529,6 +1531,7 @@
         }
       }
       if (detail) {
+        detail.className = st.error ? 'cloud-error' : 'hint';
         if (!st.configured) {
           detail.textContent = '请编辑 firebase-config.js，填入 Firebase Web SDK 配置。';
         } else if (st.signedIn) {

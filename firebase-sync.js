@@ -47,6 +47,10 @@ function isMobile() {
   return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 }
 
+function isIos() {
+  return /iPhone|iPad|iPod/i.test(navigator.userAgent);
+}
+
 function isIosStandalone() {
   return /iPhone|iPad|iPod/i.test(navigator.userAgent)
     && (window.navigator.standalone === true
@@ -209,9 +213,7 @@ async function signIn() {
   }
 
   if (isIosStandalone()) {
-    const msg = 'iPhone 主屏幕 App 内无法完成 Google 登录。请 Safari 地址栏打开 gap-plan-app.vercel.app#sync 登录。';
-    updateStatus({ error: msg });
-    callbacks.toast?.('请用 Safari 浏览器打开登录');
+    openSafariLogin();
     return;
   }
 
@@ -219,6 +221,17 @@ async function signIn() {
   provider.setCustomParameters({ prompt: 'select_account' });
 
   try {
+    // iOS Safari：popup 比 redirect 更可靠（与电脑相同方式）
+    if (isIos()) {
+      try {
+        await signInWithPopup(auth, provider);
+        return;
+      } catch (popupErr) {
+        if (popupErr.code === 'auth/popup-closed-by-user') throw popupErr;
+        await signInWithRedirect(auth, provider);
+        return;
+      }
+    }
     if (isMobile()) {
       await signInWithRedirect(auth, provider);
       return;
@@ -229,6 +242,14 @@ async function signIn() {
     callbacks.toast?.(formatAuthError(err));
     console.error(err);
   }
+}
+
+function openSafariLogin() {
+  const url = 'https://gap-plan-app.vercel.app#sync';
+  window.open(url, '_blank');
+  const msg = '已在 Safari 新标签打开。请在 Safari 完成 Google 登录（主屏幕图标与 Safari 登录状态不共享）。';
+  updateStatus({ error: msg });
+  callbacks.toast?.('请在 Safari 新标签登录');
 }
 
 async function signOut() {
@@ -346,6 +367,7 @@ window.GapCloudSync = {
   pullNow,
   pushNow,
   schedulePush,
+  openSafariLogin,
   getStatus: () => ({ ...status }),
 };
 
