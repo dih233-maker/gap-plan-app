@@ -1,0 +1,1554 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#faf9f7" />
+  <title>90-Day Gap</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #faf9f7; --bg2: #f3f1ec; --card: #ffffff; --text: #1c1c1e; --muted: #6b6b70;
+      --border: #e8e6e1; --accent: #3d6b5a; --accent-soft: #e8f0ec;
+      --warn: #c47d3a; --warn-soft: #fdf4eb; --danger: #b54a4a; --danger-soft: #fceeee;
+      --ok: #3d6b5a; --ok-soft: #e8f0ec;
+      --shadow: 0 1px 3px rgba(0,0,0,.06), 0 4px 12px rgba(0,0,0,.04);
+      --radius: 14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: "DM Sans", -apple-system, sans-serif; background: var(--bg); color: var(--text); line-height: 1.55; min-height: 100vh; }
+    .shell { max-width: 960px; margin: 0 auto; padding: 20px 16px 100px; }
+    header { margin-bottom: 28px; }
+    header h1 { font-size: 1.75rem; font-weight: 700; letter-spacing: -0.02em; }
+    header .meta { color: var(--muted); font-size: 0.85rem; margin-top: 4px; }
+    .main-nav { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 24px; padding: 4px; background: var(--bg2); border-radius: 999px; width: fit-content; }
+    .main-nav button { border: none; background: transparent; padding: 8px 16px; border-radius: 999px; font-size: 0.85rem; font-weight: 500; color: var(--muted); cursor: pointer; font-family: inherit; }
+    .main-nav button.active { background: var(--card); color: var(--text); box-shadow: var(--shadow); }
+    .section { display: none; animation: fade .25s ease; }
+    .section.active { display: block; }
+    @keyframes fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+    .section-title { font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 12px; }
+    .section-heading { font-size: 1.35rem; font-weight: 700; margin-bottom: 20px; letter-spacing: -0.02em; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; margin-bottom: 14px; box-shadow: var(--shadow); }
+    .card h3 { font-size: 0.95rem; font-weight: 600; margin-bottom: 10px; }
+    .hint { font-size: 0.78rem; color: var(--muted); margin-bottom: 12px; line-height: 1.45; }
+    .month-grid { display: grid; gap: 10px; margin-bottom: 14px; }
+    @media (min-width: 640px) { .month-grid { grid-template-columns: repeat(3, 1fr); } }
+    .month-card { background: var(--bg2); border-radius: 12px; padding: 14px; border: 1px solid var(--border); }
+    .month-card .m-label { font-size: 0.72rem; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: .05em; }
+    .month-card .m-range { font-size: 0.72rem; color: var(--muted); margin-bottom: 8px; }
+    .month-card ul { font-size: 0.82rem; padding-left: 16px; color: var(--text); }
+    .month-card li { margin-bottom: 4px; }
+    .week-ddl-banner { padding: 14px 16px; background: linear-gradient(135deg, var(--warn-soft), var(--accent-soft)); border-radius: var(--radius); margin-bottom: 16px; border: 1px solid var(--border); }
+    .week-ddl-banner .lbl { font-size: 0.72rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; }
+    .week-ddl-banner .items { display: flex; flex-wrap: wrap; gap: 8px; }
+    .ddl-chip { font-size: 0.78rem; padding: 4px 10px; background: var(--card); border-radius: 999px; border: 1px solid var(--border); }
+    .ddl-chip b { color: var(--accent); }
+    .ddl-chip.overdue { border-color: var(--danger); background: var(--danger-soft); }
+    .obj-grid { display: grid; gap: 10px; }
+    @media (min-width: 560px) { .obj-grid { grid-template-columns: 1fr 1fr; } }
+    .obj-card { padding: 16px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--card); cursor: pointer; transition: border-color .15s, box-shadow .15s; box-shadow: var(--shadow); }
+    .obj-card:hover { border-color: var(--accent); box-shadow: 0 4px 16px rgba(61,107,90,.1); }
+    .obj-card .tag { font-size: 0.68rem; font-weight: 600; color: var(--accent); text-transform: uppercase; letter-spacing: .06em; }
+    .obj-card .name { font-size: 1.05rem; font-weight: 600; margin: 4px 0; }
+    .obj-card .goal { font-size: 0.82rem; color: var(--muted); }
+    .obj-card .count { font-size: 0.75rem; color: var(--muted); margin-top: 8px; }
+    .sub-nav { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
+    .sub-nav button { padding: 6px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--card); font-size: 0.8rem; cursor: pointer; font-family: inherit; color: var(--muted); }
+    .sub-nav button.active { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); font-weight: 600; }
+    .sub-nav-wrap { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 16px; }
+    .sub-nav-wrap .hint-inline { font-size: 0.72rem; color: var(--muted); }
+    .compare-bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 10px 14px; background: var(--accent-soft); border-radius: 10px; margin-bottom: 14px; font-size: 0.82rem; }
+    .compare-bar.hint-only { background: var(--bg2); border: 1px dashed var(--border); }
+    .compare-bar .cmp-tag { padding: 3px 10px; background: var(--card); border-radius: 999px; border: 1px solid var(--accent); font-size: 0.75rem; font-weight: 600; }
+    .compare-grid { display: grid; gap: 12px; margin-bottom: 14px; }
+    @media (min-width: 640px) { .compare-grid.cols-2 { grid-template-columns: 1fr 1fr; } .compare-grid.cols-3 { grid-template-columns: repeat(3, 1fr); } }
+    @media (min-width: 900px) { .compare-grid.cols-4 { grid-template-columns: repeat(4, 1fr); } .compare-grid.cols-5 { grid-template-columns: repeat(5, 1fr); } .compare-grid.cols-6 { grid-template-columns: repeat(3, 1fr); } }
+    .compare-col { background: var(--bg2); border-radius: 12px; padding: 12px; border: 1px solid var(--border); min-width: 0; }
+    .compare-col .cmp-head { font-size: 0.82rem; font-weight: 700; color: var(--accent); margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+    .compare-col .cmp-goal { font-size: 0.72rem; color: var(--muted); margin-bottom: 10px; }
+    .mini-kr { padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 0.78rem; }
+    .mini-kr:last-child { border-bottom: none; }
+    .mini-kr .mini-ddl { font-size: 0.68rem; font-weight: 600; color: var(--muted); display: block; margin-bottom: 2px; }
+    .mini-kr .mini-text { display: block; margin-bottom: 4px; line-height: 1.35; }
+    .mini-kr.done .mini-text { opacity: .55; text-decoration: line-through; }
+    .mini-kr.overdue .mini-ddl { color: var(--danger); }
+    .mini-kr.urgent .mini-ddl { color: var(--warn); }
+    .timeline { position: relative; padding-left: 24px; }
+    .timeline::before { content: ''; position: absolute; left: 7px; top: 8px; bottom: 8px; width: 2px; background: var(--border); border-radius: 1px; }
+    .tl-item { position: relative; padding-bottom: 20px; }
+    .tl-item:last-child { padding-bottom: 0; }
+    .tl-dot { position: absolute; left: -24px; top: 4px; width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--border); background: var(--card); }
+    .tl-item.done .tl-dot { background: var(--ok); border-color: var(--ok); }
+    .tl-item.overdue .tl-dot { background: var(--danger); border-color: var(--danger); }
+    .tl-item.urgent .tl-dot { background: var(--warn); border-color: var(--warn); }
+    .tl-item.ontrack .tl-dot { border-color: var(--accent); }
+    .tl-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; flex-wrap: wrap; }
+    .tl-id { font-size: 0.72rem; font-weight: 700; color: var(--accent); }
+    .tl-ddl { font-size: 0.72rem; color: var(--muted); white-space: nowrap; }
+    .tl-text { font-size: 0.88rem; margin: 4px 0 8px; }
+    .tl-status { display: inline-block; font-size: 0.68rem; font-weight: 600; padding: 2px 8px; border-radius: 999px; text-transform: uppercase; letter-spacing: .04em; }
+    .tl-status.done { background: var(--ok-soft); color: var(--ok); }
+    .tl-status.overdue { background: var(--danger-soft); color: var(--danger); }
+    .tl-status.urgent { background: var(--warn-soft); color: var(--warn); }
+    .tl-status.pending { background: var(--bg2); color: var(--muted); }
+    .tl-status.ontrack { background: var(--accent-soft); color: var(--accent); }
+    .tl-actions { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+    .tl-actions button, .tl-actions label { font-size: 0.72rem; padding: 4px 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--card); cursor: pointer; font-family: inherit; color: var(--muted); }
+    .tl-actions button:hover { border-color: var(--accent); color: var(--accent); }
+    .tl-actions label.cmp-lbl { display: inline-flex; align-items: center; gap: 4px; }
+    .tl-edit { margin-top: 8px; padding: 10px; background: var(--bg2); border-radius: 10px; }
+    .tl-edit input { margin-bottom: 6px; }
+    .modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.25); z-index: 200; align-items: center; justify-content: center; padding: 16px; }
+    .modal-bg.open { display: flex; }
+    .modal { background: var(--card); border-radius: var(--radius); max-width: 480px; width: 100%; max-height: 80vh; overflow: auto; padding: 24px; box-shadow: 0 20px 60px rgba(0,0,0,.15); }
+    .modal h2 { font-size: 1.2rem; margin-bottom: 4px; }
+    .modal .goal { color: var(--muted); font-size: 0.85rem; margin-bottom: 16px; }
+    .kr-row { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
+    .kr-row:last-child { border-bottom: none; }
+    .kr-row .id { font-weight: 700; color: var(--accent); min-width: 28px; }
+    .kr-row .ddl { color: var(--muted); font-size: 0.78rem; white-space: nowrap; }
+    .metrics { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 14px; }
+    .metric { background: var(--bg2); border-radius: 10px; padding: 12px; text-align: center; }
+    .metric .val { font-size: 1.5rem; font-weight: 700; color: var(--accent); }
+    .metric .lbl { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
+    label { display: block; font-size: 0.78rem; color: var(--muted); margin: 10px 0 4px; font-weight: 500; }
+    input, select, textarea { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; font-size: 0.9rem; font-family: inherit; background: var(--bg); }
+    input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+    textarea { min-height: 72px; resize: vertical; }
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; padding: 10px 18px; border: none; border-radius: 10px; font-weight: 600; font-size: 0.85rem; cursor: pointer; font-family: inherit; background: var(--accent); color: #fff; }
+    .btn.secondary { background: var(--bg2); color: var(--text); border: 1px solid var(--border); }
+    .btn.small { padding: 6px 12px; font-size: 0.78rem; }
+    .btn.danger { background: var(--danger-soft); color: var(--danger); border: 1px solid var(--danger); }
+    .row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; align-items: center; }
+    table { width: 100%; font-size: 0.8rem; border-collapse: collapse; }
+    th, td { padding: 8px 6px; text-align: center; border-bottom: 1px solid var(--border); }
+    th { color: var(--muted); font-weight: 500; font-size: 0.72rem; }
+    tr.clickable { cursor: pointer; }
+    tr.clickable:hover { background: var(--accent-soft); }
+    tr.active-row { background: var(--accent-soft); }
+    .week-banner { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; padding: 12px 16px; background: var(--accent-soft); border-radius: var(--radius); margin-bottom: 16px; font-size: 0.85rem; }
+    .week-banner b { color: var(--accent); }
+    .kr-dnd-wrap { display: grid; gap: 14px; }
+    @media (min-width: 640px) { .kr-dnd-wrap { grid-template-columns: 1fr 1fr; } }
+    .focus-zones { display: grid; gap: 14px; }
+    @media (min-width: 640px) { .focus-zones { grid-template-columns: 1fr 1fr; } }
+    .zone-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .zone-add-btn {
+      width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--accent);
+      background: var(--card); color: var(--accent); font-size: 1.1rem; line-height: 1;
+      cursor: pointer; font-weight: 600; display: flex; align-items: center; justify-content: center;
+    }
+    .zone-add-btn:hover { background: var(--accent); color: #fff; }
+    .kr-chip .chip-remove {
+      margin-left: 2px; border: none; background: none; color: var(--muted);
+      cursor: pointer; font-size: 0.85rem; padding: 0 2px; line-height: 1;
+    }
+    .kr-chip .chip-remove:hover { color: var(--danger); }
+    .picker-o { margin-bottom: 14px; }
+    .picker-o-title { font-size: 0.78rem; font-weight: 700; color: var(--accent); margin-bottom: 8px; }
+    .picker-kr {
+      display: flex; align-items: flex-start; gap: 8px; padding: 8px 0;
+      border-bottom: 1px solid var(--border); font-size: 0.85rem; cursor: pointer;
+    }
+    .picker-kr.disabled { opacity: .45; cursor: default; }
+    .picker-kr input { width: auto; margin-top: 3px; accent-color: var(--accent); }
+    .drop-zone { min-height: 100px; padding: 12px; border-radius: 12px; border: 2px dashed var(--border); background: var(--bg); transition: border-color .15s, background .15s; }
+    .drop-zone.drag-over { border-color: var(--accent); background: var(--accent-soft); }
+    .drop-zone.focus-zone { border-style: solid; border-color: var(--accent); background: var(--accent-soft); min-height: 120px; }
+    .drop-zone.skip-zone { border-color: var(--muted); opacity: .85; }
+    .drop-zone-title { font-size: 0.75rem; font-weight: 600; color: var(--muted); margin-bottom: 10px; text-transform: uppercase; letter-spacing: .05em; }
+    .drop-zone.focus-zone .drop-zone-title { color: var(--accent); }
+    .kr-chip { display: inline-flex; align-items: center; gap: 6px; padding: 8px 12px; margin: 0 6px 6px 0; background: var(--card); border: 1px solid var(--border); border-radius: 10px; font-size: 0.82rem; cursor: grab; box-shadow: var(--shadow); user-select: none; }
+    .kr-chip:active { cursor: grabbing; }
+    .kr-chip.dragging { opacity: .45; }
+    .kr-chip b { color: var(--accent); font-size: 0.75rem; }
+    .kr-chip .ns-tag { font-size: 0.65rem; color: var(--muted); background: var(--bg2); padding: 1px 6px; border-radius: 999px; }
+    .day-board { display: grid; gap: 12px; }
+    @media (min-width: 720px) { .day-board { grid-template-columns: repeat(2, 1fr); } }
+    @media (min-width: 960px) { .day-board { grid-template-columns: repeat(3, 1fr); } }
+    .day-col { background: var(--bg2); border-radius: 12px; padding: 12px; border: 1px solid var(--border); min-height: 140px; transition: border-color .15s, background .15s; }
+    .day-col.drag-over { border-color: var(--accent); background: var(--accent-soft); }
+    .day-col-header { margin-bottom: 10px; }
+    .day-col-header .day-tag { font-size: 0.82rem; font-weight: 700; color: var(--accent); }
+    .day-col-header .day-focus { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
+    .day-focus-input { width: 100%; font-size: 0.75rem; padding: 4px 8px; margin-top: 4px; border: 1px dashed var(--border); background: transparent; border-radius: 6px; }
+    .task-item {
+      display: flex; align-items: center; gap: 8px; padding: 8px 10px;
+      background: var(--card); border-radius: 10px; margin-bottom: 6px;
+      border: 1px solid var(--border); cursor: grab;
+    }
+    .task-item:active { cursor: grabbing; }
+    .task-item.dragging { opacity: .4; }
+    .task-item.done { opacity: .55; }
+    .task-item.done .task-text { text-decoration: line-through; }
+    .task-body { flex: 1; min-width: 0; }
+    .task-text {
+      display: block; font-size: 0.85rem; line-height: 1.4;
+      color: var(--text); word-break: break-word;
+    }
+    .task-text-edit {
+      width: 100%; font-size: 0.85rem; padding: 4px 8px; border: 1px solid var(--accent);
+      border-radius: 6px; font-family: inherit; background: var(--card); display: none;
+    }
+    .task-item.editing .task-text { display: none; }
+    .task-item.editing .task-text-edit { display: block; }
+    .task-btns { display: flex; gap: 2px; flex-shrink: 0; align-items: center; }
+    .task-item input.task-check {
+      width: 18px !important; height: 18px; min-width: 18px; padding: 0 !important;
+      margin: 0; flex-shrink: 0; accent-color: var(--accent); cursor: pointer;
+    }
+    .task-edit-btn, .task-del-btn, .task-cancel-btn {
+      font-size: 0.68rem; padding: 2px 6px; border: none; background: var(--bg2);
+      border-radius: 4px; cursor: pointer; color: var(--muted);
+    }
+    .task-edit-btn:hover, .task-cancel-btn:hover { color: var(--accent); }
+    .task-del-btn:hover { color: var(--danger); }
+    .task-item.editing .task-edit-btn { color: var(--accent); font-weight: 700; }
+    .day-add-row { display: flex; gap: 4px; margin-top: 6px; }
+    .day-add-row input { flex: 1; padding: 6px 8px; font-size: 0.78rem; }
+    .day-add-row button { padding: 6px 10px; font-size: 0.72rem; }
+    .toast { position: fixed; bottom: 72px; left: 50%; transform: translateX(-50%); background: var(--text); color: #fff; padding: 8px 16px; border-radius: 999px; font-size: 0.82rem; opacity: 0; transition: opacity .3s; z-index: 300; }
+    .toast.show { opacity: 1; }
+    footer { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(255,255,255,.92); backdrop-filter: blur(8px); border-top: 1px solid var(--border); padding: 10px 16px; display: flex; gap: 8px; justify-content: center; }
+    .chart-bars { display: flex; align-items: flex-end; gap: 6px; height: 80px; margin: 12px 0; }
+    .chart-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    .chart-bar { width: 100%; max-width: 32px; background: var(--accent); border-radius: 4px 4px 0 0; min-height: 4px; opacity: .85; }
+    .chart-lbl { font-size: 0.62rem; color: var(--muted); }
+    .sync-list { font-size: 0.85rem; padding-left: 18px; line-height: 1.6; }
+    .sync-list code { font-size: 0.78rem; background: var(--bg2); padding: 1px 6px; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <h1>90-Day Gap</h1>
+      <p class="meta">2026-06-17 → 09-14 · 竞业至 09-13 · 本地保存</p>
+    </header>
+
+    <nav class="main-nav" id="mainNav">
+      <button data-section="objective" class="active">Objective</button>
+      <button data-section="progress">KR 进展</button>
+      <button data-section="execute">落地追踪</button>
+      <button data-section="finance">Finance</button>
+      <button data-section="sync">Sync</button>
+    </nav>
+
+    <section id="objective" class="section active">
+      <p class="section-title">Part 1</p>
+      <h2 class="section-heading">Objective · 北极星</h2>
+      <div id="monthlyBlock"></div>
+      <div id="weekDdlBlock"></div>
+      <div class="obj-grid" id="objGrid"></div>
+    </section>
+
+    <section id="progress" class="section">
+      <p class="section-title">Part 2</p>
+      <h2 class="section-heading">KR 进展可视化</h2>
+      <div class="sub-nav-wrap">
+        <div class="sub-nav" id="progressSubNav"></div>
+        <span class="hint-inline">⌘/Ctrl + 点击多选</span>
+      </div>
+      <div id="compareBar"></div>
+      <div id="progressPanel"></div>
+    </section>
+
+    <section id="execute" class="section">
+      <p class="section-title">Part 3</p>
+      <h2 class="section-heading">落地追踪</h2>
+      <div class="week-banner">
+        <span><b>周一</b> = 计划日 · 本周 DDL 自动入选做功 KR</span>
+        <span><b>周日</b> = Review 日</span>
+      </div>
+      <div class="card">
+        <label>当前周</label>
+        <select id="execWeek"></select>
+      </div>
+      <div class="card">
+        <h3>周一 · 做功 KR</h3>
+        <p class="hint">本周 / 下周 DDL 的 KR 会自动出现 · 点 <b>+</b> 从全部 O 里多选添加 · 自定义 KR 请先在 <a href="#progress" style="color:var(--accent)">KR 进展</a> 页添加</p>
+        <div class="focus-zones" id="krFocusZones"></div>
+      </div>
+      <div class="card">
+        <h3>日计划</h3>
+        <p class="hint">W0–W2 已预填建议任务 · 先点 ✎ 进入编辑 · 再点 ↩ 撤回 · ✕ 删除 · 拖拽换天</p>
+        <div class="day-board" id="dayBoard"></div>
+      </div>
+      <div class="card">
+        <h3>周日 · Weekly Review</h3>
+        <div class="grid2">
+          <div><label>训练 /5</label><input type="number" id="r_train" min="0" max="7" /></div>
+          <div><label>小红书 / 周目标 2</label><input type="number" id="r_xhs" min="0" /></div>
+          <div><label>求职触达</label><input type="number" id="r_outreach" min="0" /></div>
+          <div><label>面试</label><input type="number" id="r_interview" min="0" /></div>
+        </div>
+        <label>本周做功 KR 完成度（自评）</label>
+        <input id="r_kr_done" placeholder="例：5/7" />
+        <label>Q1 最值得继续？</label><textarea id="r_q1"></textarea>
+        <label>Q2 高消耗低收益？</label><textarea id="r_q2"></textarea>
+        <label>Q3 下周三件大事</label><textarea id="r_q3"></textarea>
+        <div class="row">
+          <label style="display:flex;align-items:center;gap:6px;font-size:0.85rem;color:var(--text)"><input type="checkbox" id="r_finance" /> 财务表已填</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:0.85rem;color:var(--warn)"><input type="checkbox" id="r_risk" /> 竞业风险</label>
+        </div>
+        <div class="row"><button class="btn" onclick="saveReview()">保存 Review</button></div>
+      </div>
+    </section>
+
+    <section id="finance" class="section">
+      <p class="section-title">O6 · 理财</p>
+      <h2 class="section-heading">Finance</h2>
+      <div class="card">
+        <label>周</label><select id="finWeek"></select>
+        <div class="grid2" style="margin-top:8px">
+          <div><label>收入合计 ¥</label><input type="number" id="f_in" /></div>
+          <div><label>竞业补偿 ¥</label><input type="number" id="f_nc" placeholder="26912" /></div>
+          <div><label>其他收入 ¥</label><input type="number" id="f_other" /></div>
+          <div><label>生活支出 ¥</label><input type="number" id="f_live" /></div>
+          <div><label>旅行/大额 ¥</label><input type="number" id="f_big" /></div>
+          <div><label>净资产生末 ¥</label><input type="number" id="f_net" /></div>
+        </div>
+        <div class="metrics" style="margin-top:12px">
+          <div class="metric"><div class="val" id="f_save">—</div><div class="lbl">本周储蓄</div></div>
+          <div class="metric"><div class="val" id="f_rate">—</div><div class="lbl">储蓄率 %</div></div>
+        </div>
+        <label>备注</label><input id="f_note" />
+        <div class="row"><button class="btn" onclick="saveFinance()">保存</button></div>
+      </div>
+      <div class="card" style="overflow-x:auto">
+        <h3>13 周总览</h3>
+        <table id="finTable"><thead><tr><th>周</th><th>收入</th><th>支出</th><th>储蓄</th><th>率%</th><th>净资产</th></tr></thead><tbody></tbody></table>
+      </div>
+    </section>
+
+    <section id="sync" class="section">
+      <div class="card">
+        <h3>手机 / App 端打开</h3>
+        <p class="hint">这是网页，不是原生 App。推荐两种方式：</p>
+        <ul class="sync-list">
+          <li><b>同一 WiFi</b>：电脑终端运行 <code>python3 -m http.server 8765</code>（在 gap-plan-app 目录），手机 Safari 打开 <code>http://电脑IP:8765</code> → 分享 → <b>添加到主屏幕</b></li>
+          <li><b>在线地址</b>：把文件夹部署到 Vercel / Netlify / GitHub Pages，手机用固定 URL 打开并加主屏幕</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>跨设备同步</h3>
+        <p class="hint">数据存在各设备浏览器 localStorage，<b>不会自动同步</b>。换设备或换浏览器前请 Export，另一端 Import。</p>
+        <p class="hint" id="syncMeta"></p>
+        <div class="row">
+          <button class="btn" onclick="exportData()">Export 文件</button>
+          <button class="btn secondary" onclick="copyExport()">复制 JSON</button>
+          <label class="btn secondary" style="cursor:pointer">Import<input type="file" accept=".json" id="importFile" hidden onchange="importData(event)" /></label>
+        </div>
+        <p class="hint" style="margin-top:10px">建议节奏：每天结束 Export 一次 → AirDrop / 微信发给自己 → 另一设备 Import。以<b>最后一次 Import</b>为准。</p>
+      </div>
+    </section>
+  </div>
+
+  <div class="modal-bg" id="objModal" onclick="if(event.target===this)closeModal()">
+    <div class="modal" id="objModalBody"></div>
+  </div>
+  <div class="modal-bg" id="krPickerModal" onclick="if(event.target===this)closeKrPicker()">
+    <div class="modal" style="max-width:520px">
+      <h2>添加做功 KR</h2>
+      <p class="goal" id="krPickerHint"></p>
+      <div id="krPickerBody"></div>
+      <div class="row" style="margin-top:16px">
+        <button class="btn" onclick="confirmKrPicker()">添加选中</button>
+        <button class="btn secondary" onclick="closeKrPicker()">取消</button>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <button class="btn small secondary" onclick="exportData()">Export</button>
+    <button class="btn small secondary" onclick="document.getElementById('importFile').click()">Import</button>
+  </footer>
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const BODY_START = '2026-06-21';
+    const TODAY = new Date().toISOString().slice(0, 10);
+    const KEY = 'gap90_v4';
+    const SECTIONS = ['objective','progress','execute','finance','sync'];
+
+    const O_META = {
+      NS0: { code: 'O0', short: '计划', progressKey: 'plan' },
+      NS1: { code: 'O1', short: '求职', progressKey: 'job' },
+      NS2: { code: 'O2', short: '身体', progressKey: 'body' },
+      NS3: { code: 'O3', short: 'AI作品', progressKey: 'ai' },
+      NS4: { code: 'O4', short: '荷兰', progressKey: 'nl' },
+      NS5: { code: 'O5', short: '自媒体', progressKey: 'xhs' },
+      NS6: { code: 'O6', short: '理财', progressKey: 'finance' },
+    };
+    const PROGRESS_KEY_TO_NS = Object.fromEntries(Object.entries(O_META).map(([ns, m]) => [m.progressKey, ns]));
+    const PROGRESS_TABS = ['plan', 'job', 'body', 'ai', 'nl', 'xhs'];
+
+    const MONTHLY_DELIVERABLES = [
+      { month: '6 月', range: '06-17 ~ 06-30', items: [
+        '把 90 天计划写清楚、App 用起来；固定每周一规划、周日复盘',
+        '中英文简历改好，建求职追踪表；AI side project 定选题、写 PRD；发第 1 篇自媒体',
+        '6/21 起量围度体脂拍对比照；汇丰美国卡催办；开始整理申根材料',
+      ]},
+      { month: '7 月', range: '07-01 ~ 07-31', items: [
+        '累计联系 20 人、跑起 4–6 个面试流程；7/3 提交竞业材料',
+        'AI 项目能跑通、出 Demo、上线 Deploy + README',
+        '申根递交、7 月去欧洲实地看看；医生确认能上大重量；7/17 前汇丰卡闭环',
+      ]},
+      { month: '8–9 月', range: '08-01 ~ 09-14', items: [
+        '进 Final、谈薪底线 100w+；9/13 前拿到书面 offer',
+        'AI 作品录 3 分钟视频、作品集定稿；荷兰去留写 1 页结论（9/4）',
+        '自媒体发满 20 篇；90 天身体验收；8/3、9/3 两次竞业打卡',
+      ]},
+    ];
+
+    const DEFAULT_OBJECTIVES = [
+      { id: 'NS0', name: '计划设计&校准', goal: 'Plan 制定与节奏校准本身也是 KR', progressKey: 'plan',
+        krs: [
+          { id: 'P1', text: '90天 Gap Plan 初版 + App 上线', ddl: '2026-06-17' },
+          { id: 'P2', text: 'W0 启动校准 + 竞业边界确认', ddl: '2026-06-17' },
+          { id: 'P3', text: 'W1 周一计划日：KR 池 + 日计划 Demo', ddl: '2026-06-22' },
+          { id: 'P4', text: '7月 Monthly Plan Review & 校准', ddl: '2026-07-01' },
+          { id: 'P5', text: 'Mid-point 90天校准（W6 · 8/3 竞业）', ddl: '2026-08-03' },
+          { id: 'P6', text: 'Final 复盘 + Launch 清单', ddl: '2026-09-14' },
+        ]},
+      { id: 'NS1', name: '求职', goal: '09-13 前 ≥100w 现金 offer', progressKey: 'job',
+        krs: [
+          { id: 'J1', text: '简历中英文 v1 + 统一叙事', ddl: '2026-06-19' },
+          { id: 'J2', text: '求职表 + 长名单 30→40', ddl: '2026-06-28' },
+          { id: 'J3', text: '累计触达 20 人', ddl: '2026-07-05' },
+          { id: 'J4', text: '4–6 个有效流程', ddl: '2026-07-26' },
+          { id: 'J5', text: 'Final / 谈薪 ≥100w', ddl: '2026-08-17' },
+          { id: 'J6', text: 'Written offer', ddl: '2026-09-13' },
+        ]},
+      { id: 'NS2', name: '身体', goal: '围度 + 体脂改善 · 06-21 起正式记录', progressKey: 'body',
+        krs: [
+          { id: 'B1', text: '基线 围度+体脂+对比照', ddl: '2026-06-21' },
+          { id: 'B2', text: '医生 clearance', ddl: '2026-07-04' },
+          { id: 'B3', text: '3 力 2 有氧 / 周', ddl: '2026-07-07' },
+          { id: 'B4', text: '每周日围度+体脂', ddl: 'weekly' },
+          { id: 'B5', text: '90 天验收', ddl: '2026-09-10' },
+        ]},
+      { id: 'NS3', name: 'AI 作品', goal: '可 demo 作品集', progressKey: 'ai',
+        krs: [
+          { id: 'A1', text: '选题 + PRD v1', ddl: '2026-06-22' },
+          { id: 'A2', text: '可运行原型', ddl: '2026-07-04' },
+          { id: 'A3', text: 'Demo v0.1', ddl: '2026-07-12' },
+          { id: 'A3b', text: 'v1 Deploy + README', ddl: '2026-07-24' },
+          { id: 'A4', text: '3min 视频 + 作品集定稿', ddl: '2026-08-04' },
+        ]},
+      { id: 'NS4', name: '荷兰', goal: '1 页可行性结论 09-04', progressKey: 'nl',
+        krs: [
+          { id: 'N1', text: '申根材料递交', ddl: '2026-06-28' },
+          { id: 'N2', text: '7 月欧洲考察', ddl: '2026-07-25' },
+          { id: 'N3a', text: '约谈 ≥2 人', ddl: '2026-08-08' },
+          { id: 'N3', text: '1 页最终判断', ddl: '2026-09-04' },
+        ]},
+      { id: 'NS5', name: '自媒体', goal: '10 周 × 2 篇 = 20 篇（小红书）', progressKey: 'xhs',
+        krs: [
+          { id: 'X1', text: '账号 + 第 1 篇', ddl: '2026-06-18' },
+          { id: 'X_w4', text: '累计 8 篇', ddl: '2026-07-19' },
+          { id: 'X_w8', text: '累计 16 篇', ddl: '2026-08-16' },
+          { id: 'X3', text: '锁定 2 栏目', ddl: '2026-08-08' },
+          { id: 'X_w12', text: '累计 20 篇', ddl: '2026-09-13' },
+        ]},
+      { id: 'NS6', name: '理财', goal: '汇丰闭环 + 13 周财务表', progressKey: 'finance',
+        krs: [
+          { id: 'F1', text: '汇丰美国卡闭环', ddl: '2026-07-17' },
+          { id: 'F2', text: '每周五财务周表', ddl: 'weekly' },
+          { id: 'F3', text: '6 个月现金池确认', ddl: '2026-08-31' },
+        ]},
+    ];
+
+    const WEEKS = [
+      { id: 'W0', label: 'W0 · 06-17~21', start: '2026-06-17', end: '2026-06-21', planDay: 'Wed' },
+      { id: 'W1', label: 'W1 · 06-22~28', start: '2026-06-22', end: '2026-06-28', planDay: 'Mon' },
+      { id: 'W2', label: 'W2 · 06-29~07-05', start: '2026-06-29', end: '2026-07-05', planDay: 'Mon' },
+      { id: 'W3', label: 'W3 · 07-06~12', start: '2026-07-06', end: '2026-07-12', planDay: 'Mon' },
+      { id: 'W4', label: 'W4 · 07-13~19', start: '2026-07-13', end: '2026-07-19', planDay: 'Mon' },
+      { id: 'W5', label: 'W5 · 07-20~26', start: '2026-07-20', end: '2026-07-26', planDay: 'Mon' },
+      { id: 'W6', label: 'W6 · 07-27~08-02', start: '2026-07-27', end: '2026-08-02', planDay: 'Mon' },
+      { id: 'W7', label: 'W7 · 08-03~09', start: '2026-08-03', end: '2026-08-09', planDay: 'Mon' },
+      { id: 'W8', label: 'W8 · 08-10~16', start: '2026-08-10', end: '2026-08-16', planDay: 'Mon' },
+      { id: 'W9', label: 'W9 · 08-17~23', start: '2026-08-17', end: '2026-08-23', planDay: 'Mon' },
+      { id: 'W10', label: 'W10 · 08-24~30', start: '2026-08-24', end: '2026-08-30', planDay: 'Mon' },
+      { id: 'W11', label: 'W11 · 08-31~09-06', start: '2026-08-31', end: '2026-09-06', planDay: 'Mon' },
+      { id: 'W12', label: 'W12 · 09-07~13', start: '2026-09-07', end: '2026-09-13', planDay: 'Mon' },
+    ];
+
+    const WEEK_SEED = {
+      W0: {
+        focusIds: ['J1','J2','B1','A1','F1','X1','P1','P2'],
+        skipIds: ['N1'],
+        days: {
+          'Wed 06-17': { focus: '启动·理财', tasks: ['确认竞业边界','NS 对齐','散步 30min','阅读 30min','20:00 汇丰 R1 电话'] },
+          'Thu 06-18': { focus: '求职·内容', tasks: ['美签自助预约','建求职表','核心激活 30min','小红书 #1'] },
+          'Fri 06-19': { focus: '求职·AI', tasks: ['简历中英文叙事','AI 选题 + PRD 大纲','快走 45min','晚读禁刷流'] },
+          'Sat 06-20': { focus: '身体·求职', tasks: ['公司长名单 30','荷兰调研维度表','阅读 60min'] },
+          'Sun 06-21': { focus: '复盘·基线', tasks: ['Weekly Review','财务 W0','触达名单 10','围度+体脂基线+照片'] },
+        }},
+      W1: {
+        focusIds: ['P3','A1','J2','J3','N1','B3','F2','X2'],
+        skipIds: [],
+        days: {
+          'Mon 06-22': { focus: '计划·AI·求职', tasks: ['30min 周计划 + 拖拽做功 KR','PRD v1','猎头/前同事 3','下肢+核心'] },
+          'Tue 06-23': { focus: '求职·内容', tasks: ['英文简历 1 页','投递 3（非竞业）','小红书 1 篇','有氧 35min'] },
+          'Wed 06-24': { focus: 'AI·社交', tasks: ['Mock data 字段','AI/GTM 长文笔记','Coffee chat 2','肩胸活动度'] },
+          'Thu 06-25': { focus: '求职·AI', tasks: ['10 JD 关键词','改简历 1 版','Demo 草图','臀腿+背'] },
+          'Fri 06-26': { focus: '理财', tasks: ['财务 W1','汇丰 R2','求职跟进','复盘'] },
+          'Sat 06-27': { focus: '荷兰·内容', tasks: ['四城生活成本','小红书 1 篇','AI 竞品 5','户外 60min'] },
+          'Sun 06-28': { focus: '复盘', tasks: ['Weekly Review','7/3 竞业清单','小红书凑 2 篇'] },
+        }},
+      W2: {
+        focusIds: ['A2','J3','N1','B2','B4','F1','X2'],
+        skipIds: ['N2'],
+        days: {
+          'Mon 06-29': { focus: '计划·竞业', tasks: ['拖拽做功 KR','竞业材料路径','联系 4 人','下肢力量'] },
+          'Tue 06-30': { focus: 'AI·理财', tasks: ['Mock dataset','简历加 AI 占位','6 月财务小结','小红书'] },
+          'Wed 07-01': { focus: '竞业·AI', tasks: ['社保/个税材料','投递 4','AI 首模块','恢复训练'] },
+          'Thu 07-02': { focus: '面试准备', tasks: ['材料完整性','自我介绍 2min','Memo 模板'] },
+          'Fri 07-03': { focus: '竞业·理财', tasks: ['提交竞业 + 存回执','汇丰 R3','跟进触达','小红书'] },
+          'Sat 07-04': { focus: '身体·签·AI', tasks: ['医生 clearance','申根递交','AI 完整 I/O','阅读 60min'] },
+          'Sun 07-05': { focus: '复盘', tasks: ['Weekly Review','围度 W2','面试题库'] },
+        }},
+    };
+
+    let dragState = null;
+    let krPickerTarget = 'focus';
+    let taskEditBackup = null;
+
+    function oLabel(nsId) {
+      const m = O_META[nsId];
+      return m ? `${m.code}-${m.short}` : nsId;
+    }
+    function oLabelByKey(key) {
+      const ns = PROGRESS_KEY_TO_NS[key];
+      return ns ? oLabel(ns) : key;
+    }
+    function sortKrsByDdl(krs) {
+      return [...krs].sort((a, b) => {
+        if (a.ddl === 'weekly' && b.ddl === 'weekly') return 0;
+        if (a.ddl === 'weekly') return 1;
+        if (b.ddl === 'weekly') return -1;
+        if (!a.ddl) return 1;
+        if (!b.ddl) return -1;
+        return a.ddl.localeCompare(b.ddl);
+      });
+    }
+    function getCompareKeys() {
+      const keys = load().compareKeys;
+      if (keys && keys.length) return keys;
+      return ['job'];
+    }
+
+    function load() {
+      try {
+        let raw = JSON.parse(localStorage.getItem(KEY));
+        if (raw) return ensureData(raw);
+        raw = migrateFromOlder();
+        if (raw) return ensureData(raw);
+        return defaultData();
+      } catch { return defaultData(); }
+    }
+
+    function defaultData() {
+      return {
+        objectives: JSON.parse(JSON.stringify(DEFAULT_OBJECTIVES)),
+        krDone: {}, compareKeys: ['job'], body: [], lifts: [], finance: {}, reviews: {}, weeks: {},
+      };
+    }
+
+    function ensureData(d) {
+      if (!d.objectives) d.objectives = JSON.parse(JSON.stringify(DEFAULT_OBJECTIVES));
+      if (d.compareIds && !d.compareKeys) {
+        d.compareKeys = ['job'];
+        delete d.compareIds;
+      }
+      if (!d.compareKeys || !d.compareKeys.length) d.compareKeys = ['job'];
+      if (!d.krDone) d.krDone = {};
+      if (!d.weeks) d.weeks = {};
+      if (!d.body) d.body = [];
+      if (!d.lifts) d.lifts = [];
+      if (!d.finance) d.finance = {};
+      if (!d.reviews) d.reviews = {};
+      // inject NS0 if missing from old saves
+      if (!d.objectives.find(o => o.id === 'NS0')) {
+        d.objectives.unshift(JSON.parse(JSON.stringify(DEFAULT_OBJECTIVES[0])));
+      }
+      return d;
+    }
+
+    function migrateFromOlder() {
+      for (const k of ['gap90_v3', 'gap90_v2']) {
+        try {
+          const old = JSON.parse(localStorage.getItem(k) || 'null');
+          if (!old) continue;
+          const d = defaultData();
+          d.krDone = old.krDone || {};
+          d.body = old.body || [];
+          d.lifts = old.lifts || [];
+          d.finance = old.finance || {};
+          d.reviews = old.reviews || {};
+          if (old.objectives) d.objectives = old.objectives;
+          if (old.weeks) {
+            d.weeks = migrateWeeksFormat(old.weeks);
+          }
+          return d;
+        } catch { /* continue */ }
+      }
+      return null;
+    }
+
+    function migrateWeeksFormat(oldWeeks) {
+      const out = {};
+      for (const [wid, w] of Object.entries(oldWeeks)) {
+        if (w.focusIds) { out[wid] = w; continue; }
+        const focusIds = (w.focus || []).filter(f => f.on).map(f => f.id);
+        const skipIds = (w.focus || []).filter(f => !f.on).map(f => f.id);
+        out[wid] = { focusIds, nextFocusIds: w.nextFocusIds || [], days: w.days || {} };
+      }
+      return out;
+    }
+
+    function persist(d) {
+      d._updatedAt = new Date().toISOString();
+      localStorage.setItem(KEY, JSON.stringify(d));
+    }
+    function toast(m) { const t = document.getElementById('toast'); t.textContent = m; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2000); }
+    function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/'/g, '&#39;'); }
+    function attrEsc(s) { return String(s ?? '').replace(/&/g, '&amp;').replace(/"/g, '&quot;'); }
+    function jsEsc(s) { return String(s).replace(/\\/g, '\\\\').replace(/'/g, "\\'"); }
+    function dayId(wid, dk) { return `add-${wid}-${dk.replace(/\s/g, '')}`; }
+
+    function getObjectives() { return load().objectives; }
+    function getAllKrs() {
+      return getObjectives().flatMap(o => o.krs.map(k => ({ ...k, ns: o.id, nsName: o.name, progressKey: o.progressKey })));
+    }
+    function findKr(id) { return getAllKrs().find(k => k.id === id); }
+    function findObjByKr(id) {
+      for (const o of getObjectives()) if (o.krs.some(k => k.id === id)) return o;
+      return null;
+    }
+
+    function getCurrentWeekId() {
+      for (const w of WEEKS) if (TODAY >= w.start && TODAY <= w.end) return w.id;
+      if (TODAY < WEEKS[0].start) return WEEKS[0].id;
+      return WEEKS[WEEKS.length - 1].id;
+    }
+
+    function getWeekRange(wid) { return WEEKS.find(w => w.id === wid); }
+
+    function isKrDone(id) { return !!(load().krDone || {})[id]; }
+    function setKrDone(id, val) {
+      const d = load(); d.krDone = d.krDone || {}; d.krDone[id] = val; persist(d);
+      renderObjectives(); renderProgress();
+    }
+
+    function krTimelineStatus(k) {
+      if (isKrDone(k.id)) return { cls: 'done', label: '已完成' };
+      if (k.ddl === 'weekly') return { cls: 'ontrack', label: '进行中' };
+      if (TODAY > k.ddl) return { cls: 'overdue', label: '已逾期' };
+      const days = (new Date(k.ddl) - new Date(TODAY)) / 864e5;
+      if (days <= 5) return { cls: 'urgent', label: '临近 DDL' };
+      return { cls: 'ontrack', label: '进行中' };
+    }
+
+    function fmtDdl(d) {
+      if (d === 'weekly') return '每周';
+      if (!d) return '—';
+      return d.slice(5).replace('-', '/');
+    }
+
+    function getWeekDdlKrs() {
+      const wid = getCurrentWeekId();
+      const w = getWeekRange(wid);
+      const inWeek = getAllKrs().filter(k => {
+        if (k.ddl === 'weekly' || !k.ddl || isKrDone(k.id)) return false;
+        return k.ddl >= w.start && k.ddl <= w.end;
+      }).sort((a, b) => a.ddl.localeCompare(b.ddl));
+      if (inWeek.length) return { wid, w, krs: inWeek };
+      const upcoming = getAllKrs().filter(k => {
+        if (k.ddl === 'weekly' || !k.ddl || isKrDone(k.id)) return false;
+        return k.ddl >= TODAY;
+      }).sort((a, b) => a.ddl.localeCompare(b.ddl)).slice(0, 4);
+      return { wid, w, krs: upcoming, upcoming: true };
+    }
+
+    function switchSection(id) {
+      if (!SECTIONS.includes(id)) id = 'objective';
+      document.querySelectorAll('#mainNav button').forEach(b => b.classList.toggle('active', b.dataset.section === id));
+      document.querySelectorAll('.section').forEach(s => s.classList.toggle('active', s.id === id));
+      history.replaceState(null, '', '#' + id);
+      if (id === 'objective') renderObjectives();
+      if (id === 'progress') renderProgress();
+      if (id === 'execute') renderExecute();
+      if (id === 'finance') { loadFinance(); renderFinTable(); }
+      if (id === 'sync') renderSyncMeta();
+    }
+
+    function renderMonthlyBlock() {
+      document.getElementById('monthlyBlock').innerHTML = `
+        <div class="card">
+          <h3>每月核心 Deliverables</h3>
+          <div class="month-grid">${MONTHLY_DELIVERABLES.map(m => `
+            <div class="month-card">
+              <div class="m-label">${m.month}</div>
+              <div class="m-range">${m.range}</div>
+              <ul>${m.items.map(i => `<li>${i}</li>`).join('')}</ul>
+            </div>`).join('')}
+          </div>
+        </div>`;
+    }
+
+    function renderWeekDdlBlock() {
+      const { wid, w, krs, upcoming } = getWeekDdlKrs();
+      const label = upcoming
+        ? `${wid} · 本周无硬 DDL · 最近待办`
+        : `${wid}（${w.start.slice(5)} ~ ${w.end.slice(5)}）· 本周核心 DDL KR`;
+      document.getElementById('weekDdlBlock').innerHTML = `
+        <div class="week-ddl-banner">
+          <div class="lbl">${label}</div>
+          <div class="items">${krs.length ? krs.map(k => {
+            const st = krTimelineStatus(k);
+            return `<span class="ddl-chip ${st.cls === 'overdue' ? 'overdue' : ''}"><b>${oLabel(k.ns)}</b> ${esc(k.text)} · ${fmtDdl(k.ddl)}</span>`;
+          }).join('') : '<span class="hint" style="margin:0">暂无 · 去 KR 进展页添加</span>'}
+          </div>
+        </div>`;
+    }
+
+    function renderObjectives() {
+      renderMonthlyBlock();
+      renderWeekDdlBlock();
+      document.getElementById('objGrid').innerHTML = getObjectives().map(o => {
+        const done = o.krs.filter(k => isKrDone(k.id)).length;
+        return `<div class="obj-card" onclick="openObjModal('${o.id}')">
+          <div class="tag">${oLabel(o.id)}</div>
+          <div class="name">${esc(o.name)}</div>
+          <div class="goal">${esc(o.goal)}</div>
+          <div class="count">${done}/${o.krs.length} KR · 点击查看</div>
+        </div>`;
+      }).join('');
+    }
+
+    function openObjModal(nsId) {
+      const o = getObjectives().find(x => x.id === nsId);
+      document.getElementById('objModalBody').innerHTML = `
+        <h2>${esc(o.name)}</h2>
+        <p class="goal">${esc(o.goal)}</p>
+        ${sortKrsByDdl(o.krs).map(k => `<div class="kr-row"><span style="flex:1">${esc(k.text)}</span><span class="ddl">${fmtDdl(k.ddl)}</span></div>`).join('')}
+        <div class="row" style="margin-top:16px">
+          <button class="btn" onclick="closeModal();switchSection('progress');setProgressView('${o.progressKey}')">查看进展 →</button>
+          ${o.progressKey === 'finance' ? `<button class="btn secondary" onclick="closeModal();switchSection('finance')">Finance</button>` : ''}
+        </div>`;
+      document.getElementById('objModal').classList.add('open');
+    }
+    function closeModal() { document.getElementById('objModal').classList.remove('open'); }
+
+    function onProgressTabClick(key, e) {
+      const d = load();
+      let keys = [...(d.compareKeys || ['job'])];
+      if (e.metaKey || e.ctrlKey) {
+        if (keys.includes(key)) {
+          keys = keys.filter(k => k !== key);
+          if (!keys.length) keys = [key];
+        } else {
+          keys.push(key);
+        }
+      } else {
+        keys = [key];
+      }
+      d.compareKeys = keys;
+      persist(d);
+      renderProgress();
+      history.replaceState(null, '', '#progress' + (keys.length === 1 ? '-' + keys[0] : ''));
+    }
+
+    function selectAllCompare() {
+      const d = load();
+      d.compareKeys = [...PROGRESS_TABS];
+      persist(d);
+      renderProgress();
+      toast('已全选 6 个 Objective');
+    }
+
+    function clearCompare() {
+      const d = load();
+      d.compareKeys = ['job'];
+      persist(d);
+      renderProgress();
+    }
+
+    function renderCompareBar() {
+      const keys = getCompareKeys();
+      const el = document.getElementById('compareBar');
+      if (keys.length < 2) {
+        el.className = 'compare-bar hint-only';
+        el.innerHTML = `<span class="hint" style="margin:0">选 2 个以上 Objective 并排对比全部 KR，检查节奏是否过紧</span>`;
+        return;
+      }
+      el.className = 'compare-bar';
+      el.innerHTML = `
+        <span>对比中</span>
+        ${keys.map(k => `<span class="cmp-tag">${oLabelByKey(k)}</span>`).join('')}
+        <button class="btn secondary small" onclick="clearCompare()">清空 · 回到单选</button>`;
+    }
+
+    function renderObjectiveCompareGrid() {
+      const keys = getCompareKeys();
+      if (keys.length < 2) return '';
+      const gridCls = keys.length >= 5 ? 'cols-6' : keys.length >= 4 ? 'cols-4' : keys.length >= 3 ? 'cols-3' : 'cols-2';
+      return `<div class="card"><h3>Objective 并行对比</h3>
+        <p class="hint">左侧到右侧 = 各 O 的全部 KR（按 DDL 排序）· 一眼看哪些线叠在一起、是否排太满</p>
+        <div class="compare-grid ${gridCls}">${keys.map(key => {
+          const ns = PROGRESS_KEY_TO_NS[key];
+          const obj = getObjectives().find(o => o.id === ns);
+          if (!obj) return '';
+          const krs = sortKrsByDdl(obj.krs);
+          return `<div class="compare-col">
+            <div class="cmp-head">${oLabel(obj.id)} · ${esc(obj.name)}</div>
+            <div class="cmp-goal">${esc(obj.goal)}</div>
+            ${krs.map(k => {
+              const st = krTimelineStatus(k);
+              return `<div class="mini-kr ${st.cls}">
+                <span class="mini-ddl">${fmtDdl(k.ddl)}</span>
+                <span class="mini-text">${esc(k.text)}</span>
+                <span class="tl-status ${st.cls}">${st.label}</span>
+              </div>`;
+            }).join('')}
+          </div>`;
+        }).join('')}</div></div>`;
+    }
+
+    function renderTimeline(krs, objId) {
+      const sorted = sortKrsByDdl(krs);
+      return `<div class="timeline">${sorted.map(k => {
+        const st = krTimelineStatus(k);
+        const editId = `edit-${objId}-${k.id}`;
+        return `<div class="tl-item ${st.cls}" id="tl-${objId}-${k.id}">
+          <div class="tl-dot"></div>
+          <div class="tl-head"><span class="tl-id">${fmtDdl(k.ddl)}</span><span class="tl-ddl">${k.id}</span></div>
+          <div class="tl-text">${esc(k.text)}</div>
+          <span class="tl-status ${st.cls}">${st.label}</span>
+          <div class="tl-actions">
+            ${isKrDone(k.id)
+              ? `<button onclick="setKrDone('${k.id}',false)">取消完成</button>`
+              : `<button onclick="setKrDone('${k.id}',true)">标记完成</button>`}
+            <button onclick="toggleKrEdit('${objId}','${k.id}')">编辑</button>
+            <button class="danger" onclick="deleteKr('${objId}','${k.id}')">删</button>
+          </div>
+          <div class="tl-edit" id="${editId}" style="display:none">
+            <label>内容</label><input id="${editId}-text" value="${esc(k.text)}" />
+            <label>DDL（YYYY-MM-DD 或 weekly）</label><input id="${editId}-ddl" value="${esc(k.ddl)}" />
+            <div class="row"><button class="btn small" onclick="saveKrEdit('${objId}','${k.id}')">保存</button></div>
+          </div>
+        </div>`;
+      }).join('')}</div>
+      <div class="row"><button class="btn secondary small" onclick="addKr('${objId}')">+ 新增 KR</button></div>`;
+    }
+
+    function toggleKrEdit(objId, krId) {
+      const el = document.getElementById(`edit-${objId}-${krId}`);
+      el.style.display = el.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function saveKrEdit(objId, krId) {
+      const d = load();
+      const o = d.objectives.find(x => x.id === objId);
+      const k = o.krs.find(x => x.id === krId);
+      const editId = `edit-${objId}-${krId}`;
+      k.text = document.getElementById(`${editId}-text`).value.trim() || k.text;
+      k.ddl = document.getElementById(`${editId}-ddl`).value.trim() || k.ddl;
+      o.krs = sortKrsByDdl(o.krs);
+      persist(d); toast('KR 已更新'); renderProgress(); renderObjectives();
+    }
+
+    function addKr(objId) {
+      const d = load();
+      const o = d.objectives.find(x => x.id === objId);
+      const id = prompt('KR ID（如 J7、P7）', '+');
+      if (!id) return;
+      o.krs.push({ id, text: '新 KR — 点击编辑', ddl: TODAY });
+      o.krs = sortKrsByDdl(o.krs);
+      persist(d); renderProgress(); renderObjectives(); toast('已添加');
+    }
+
+    function deleteKr(objId, krId) {
+      if (!confirm(`删除 ${krId}？`)) return;
+      const d = load();
+      const o = d.objectives.find(x => x.id === objId);
+      o.krs = o.krs.filter(k => k.id !== krId);
+      for (const wid of Object.keys(d.weeks || {})) {
+        const w = d.weeks[wid];
+        if (w.focusIds) w.focusIds = w.focusIds.filter(x => x !== krId);
+        if (w.nextFocusIds) w.nextFocusIds = w.nextFocusIds.filter(x => x !== krId);
+      }
+      persist(d); renderProgress(); renderObjectives(); renderExecute();
+    }
+
+    function setProgressView(key) {
+      const d = load();
+      d.compareKeys = [key];
+      persist(d);
+      renderProgress();
+    }
+
+    function renderProgressSubNav() {
+      const keys = getCompareKeys();
+      const items = [
+        { key: 'plan', label: '计划' }, { key: 'job', label: '求职' },
+        { key: 'body', label: '身体' }, { key: 'ai', label: 'AI' },
+        { key: 'nl', label: '荷兰' }, { key: 'xhs', label: '自媒体' },
+      ];
+      document.getElementById('progressSubNav').innerHTML =
+        items.map(i =>
+          `<button data-pv="${i.key}" class="${keys.includes(i.key) ? 'active' : ''}" onclick="onProgressTabClick('${i.key}', event)">${i.label}</button>`
+        ).join('') +
+        `<button class="btn secondary small" onclick="selectAllCompare()">一键全选</button>`;
+    }
+
+    function bodyEntries() {
+      return (load().body || []).filter(e => e.date >= BODY_START).sort((a,b) => a.date.localeCompare(b.date));
+    }
+
+    function calcDelta(arr, key) {
+      if (arr.length < 2) return '—';
+      return (arr[arr.length-1][key] - arr[0][key]).toFixed(1);
+    }
+
+    function renderBodyProgress() {
+      const entries = bodyEntries();
+      const lifts = load().lifts || [];
+      const waistData = entries.filter(e => e.waist != null);
+      const bfData = entries.filter(e => e.bf != null);
+      const maxW = Math.max(...waistData.map(e => e.waist), 1);
+      const obj = getObjectives().find(o => o.progressKey === 'body');
+      return `${renderObjectiveCompareGrid()}
+      <div class="card"><h3>${oLabel(obj.id)} · 身体 KR</h3>${renderTimeline(obj.krs, obj.id)}</div>
+      <div class="card">
+        <h3>身体追踪 · 自 06-21 起</h3>
+        <p class="hint">术后满一个月前以恢复为主；06-21 起正式记录围度、体脂、力训重量。</p>
+        <div class="metrics">
+          <div class="metric"><div class="val">${calcDelta(waistData, 'waist')}</div><div class="lbl">腰围 Δ cm</div></div>
+          <div class="metric"><div class="val">${calcDelta(bfData, 'bf')}</div><div class="lbl">体脂 Δ pp</div></div>
+        </div>
+        ${waistData.length ? `<p style="font-size:0.78rem;color:var(--muted);margin-bottom:6px">腰围趋势</p>
+        <div class="chart-bars">${waistData.slice(-8).map(e =>
+          `<div class="chart-bar-wrap"><div class="chart-bar" style="height:${(e.waist/maxW*70)+10}px"></div><span class="chart-lbl">${e.date.slice(5)}</span></div>`).join('')}</div>` : ''}
+      </div>
+      <div class="card"><h3>录入 · 围度 & 体脂</h3>
+        <label>日期（≥ 06-21）</label><input type="date" id="b_date" min="${BODY_START}" />
+        <div class="grid2">
+          <div><label>腰围 cm</label><input type="number" step="0.1" id="b_waist" /></div>
+          <div><label>臀围 cm</label><input type="number" step="0.1" id="b_hip" /></div>
+          <div><label>大腿 cm</label><input type="number" step="0.1" id="b_thigh" /></div>
+          <div><label>上臂 cm</label><input type="number" step="0.1" id="b_arm" /></div>
+          <div><label>体脂率 %</label><input type="number" step="0.1" id="b_bf" /></div>
+        </div>
+        <label>备注</label><input id="b_note" placeholder="测量条件" />
+        <div class="row"><button class="btn" onclick="saveBody()">保存</button></div>
+      </div>
+      <div class="card"><h3>力训重量记录</h3>
+        <div class="grid2">
+          <div><label>日期</label><input type="date" id="l_date" min="${BODY_START}" /></div>
+          <div><label>动作</label><input id="l_ex" placeholder="深蹲 / 硬拉 / 推…" /></div>
+          <div><label>重量 kg</label><input type="number" step="0.5" id="l_kg" /></div>
+          <div><label>组×次</label><input id="l_reps" placeholder="3×8" /></div>
+        </div>
+        <div class="row"><button class="btn secondary" onclick="saveLift()">添加</button></div>
+        <table style="margin-top:12px"><thead><tr><th>日期</th><th>动作</th><th>kg</th><th>组次</th></tr></thead>
+        <tbody>${lifts.filter(l => l.date >= BODY_START).slice(-10).reverse().map(l =>
+          `<tr><td>${l.date.slice(5)}</td><td>${esc(l.ex)}</td><td>${l.kg}</td><td>${esc(l.reps||'—')}</td></tr>`).join('') || '<tr><td colspan="4">暂无</td></tr>'}</tbody></table>
+      </div>
+      <div class="card" style="overflow-x:auto"><h3>历史</h3>
+        <table><thead><tr><th>日期</th><th>腰</th><th>臀</th><th>腿</th><th>臂</th><th>体脂</th></tr></thead>
+        <tbody>${entries.map(e => `<tr><td>${e.date.slice(5)}</td><td>${e.waist??'—'}</td><td>${e.hip??'—'}</td><td>${e.thigh??'—'}</td><td>${e.arm??'—'}</td><td>${e.bf??'—'}</td></tr>`).join('') || '<tr><td colspan="6">06-21 后开始记录</td></tr>'}</tbody></table>
+      </div>`;
+    }
+
+    function renderProgress() {
+      renderProgressSubNav();
+      renderCompareBar();
+      const panel = document.getElementById('progressPanel');
+      const keys = getCompareKeys();
+
+      if (keys.length >= 2) {
+        panel.innerHTML = renderObjectiveCompareGrid() +
+          `<p class="hint">单选某一 Objective 可编辑 KR、录入身体数据 · 点「清空」回到单选</p>`;
+        return;
+      }
+
+      const progressView = keys[0] || 'job';
+      const map = { plan: 'NS0', job: 'NS1', body: 'NS2', ai: 'NS3', nl: 'NS4', xhs: 'NS5' };
+      if (progressView === 'body') {
+        panel.innerHTML = renderBodyProgress();
+        const bd = document.getElementById('b_date');
+        if (bd) bd.value = TODAY >= BODY_START ? TODAY : BODY_START;
+        const ld = document.getElementById('l_date');
+        if (ld) ld.value = bd ? bd.value : BODY_START;
+        return;
+      }
+      const obj = getObjectives().find(o => o.id === map[progressView]);
+      panel.innerHTML = `
+        <div class="card"><h3>${oLabel(obj.id)} · ${esc(obj.name)}</h3>
+          <p class="hint">KR 按 DDL 排序 · 可编辑 · ⌘/Ctrl 多选标签并排对比 · 红=逾期 · 橙=5天内</p>
+          ${renderTimeline(obj.krs, obj.id)}
+        </div>`;
+    }
+
+    function buildWeekFromSeed(wid, seed) {
+      const days = {};
+      for (const [dk, dv] of Object.entries(seed.days)) {
+        days[dk] = {
+          focus: dv.focus,
+          tasks: dv.tasks.map((text, i) => ({ id: wid + '-' + dk.replace(/\s/g,'') + '-' + i, text, done: false })),
+        };
+      }
+      return { focusIds: [...seed.focusIds], nextFocusIds: [], days };
+    }
+
+    function genericWeek(wid) {
+      const w = getWeekRange(wid);
+      const mon = w.start;
+      return {
+        focusIds: [],
+        nextFocusIds: [],
+        days: {
+          [`Mon ${mon.slice(5).replace('-','/')}`]: { focus: '计划', tasks: [
+            { id: wid+'-m1', text: '拖拽做功 KR · 30min 排程', done: false },
+            { id: wid+'-m2', text: '对齐本周核心 DDL', done: false },
+          ]},
+          'Tue': { focus: '', tasks: [] },
+          'Wed': { focus: '', tasks: [] },
+          'Thu': { focus: '', tasks: [] },
+          'Fri': { focus: '理财', tasks: [{ id: wid+'-f1', text: '财务周表', done: false }] },
+          'Sat': { focus: '', tasks: [] },
+          'Sun': { focus: '复盘', tasks: [
+            { id: wid+'-s1', text: 'Weekly Review', done: false },
+            { id: wid+'-s2', text: '围度/体脂测量', done: false },
+          ]},
+        },
+      };
+    }
+
+    function taskText(t) {
+      if (typeof t === 'string') return t;
+      return t?.text ?? '';
+    }
+
+    function normalizeWeekDays(wk, wid) {
+      if (!wk.days) return;
+      for (const [dk, day] of Object.entries(wk.days)) {
+        day.tasks = (day.tasks || []).map((t, i) => {
+          if (typeof t === 'string') {
+            return { id: `${wid}-${dk.replace(/\s/g, '')}-${i}`, text: t, done: false };
+          }
+          return { id: t.id || `t-${i}`, text: t.text ?? '', done: !!t.done };
+        });
+      }
+    }
+
+    function getNextWeekId(wid) {
+      const i = WEEKS.findIndex(w => w.id === wid);
+      return i >= 0 && i < WEEKS.length - 1 ? WEEKS[i + 1].id : null;
+    }
+
+    function krIdsForWeekRange(start, end) {
+      return getAllKrs().filter(k => {
+        if (k.ddl === 'weekly' || !k.ddl || isKrDone(k.id)) return false;
+        return k.ddl >= start && k.ddl <= end;
+      }).map(k => k.id);
+    }
+
+    function validKrId(id) { return !!findKr(id); }
+
+    function sanitizeFocusIds(ids) {
+      return [...new Set((ids || []).filter(validKrId))];
+    }
+
+    function ensureWeekFocus(wk, wid) {
+      const w = getWeekRange(wid);
+      if (!w) return;
+      const removed = new Set(wk.ddlRemoved || []);
+      const ddlThis = krIdsForWeekRange(w.start, w.end).filter(id => !removed.has(id));
+      const manual = sanitizeFocusIds(wk.focusIds);
+      wk.focusIds = sanitizeFocusIds([...ddlThis, ...manual]);
+
+      const nextWid = getNextWeekId(wid);
+      if (nextWid) {
+        const nw = getWeekRange(nextWid);
+        const removedNext = new Set(wk.ddlNextRemoved || []);
+        const ddlNext = krIdsForWeekRange(nw.start, nw.end).filter(id => !removedNext.has(id));
+        const manualNext = sanitizeFocusIds(wk.nextFocusIds);
+        wk.nextFocusIds = sanitizeFocusIds([...ddlNext, ...manualNext]);
+      } else {
+        wk.nextFocusIds = sanitizeFocusIds(wk.nextFocusIds);
+      }
+      delete wk.skipIds;
+    }
+
+    function shouldReseedWeek(wk, wid) {
+      if (wk._seeded) return false;
+      const seed = WEEK_SEED[wid];
+      if (!seed) return false;
+      normalizeWeekDays(wk, wid);
+      const dayCount = Object.keys(wk.days || {}).length;
+      const tasks = Object.values(wk.days || {}).flatMap(d => d.tasks || []);
+      const taskCount = tasks.length;
+      const allEmptyText = taskCount > 0 && tasks.every(t => !taskText(t));
+      return dayCount <= 3 || taskCount <= 3 || allEmptyText;
+    }
+
+    function getWeekData(wid) {
+      const d = load();
+      if (!d.weeks[wid]) {
+        const seed = WEEK_SEED[wid];
+        d.weeks[wid] = seed ? buildWeekFromSeed(wid, seed) : genericWeek(wid);
+        d.weeks[wid]._seeded = !!seed;
+        persist(d);
+      } else if (WEEK_SEED[wid] && shouldReseedWeek(d.weeks[wid], wid)) {
+        d.weeks[wid] = buildWeekFromSeed(wid, WEEK_SEED[wid]);
+        d.weeks[wid]._seeded = true;
+        persist(d);
+      } else if (WEEK_SEED[wid]) {
+        normalizeWeekDays(d.weeks[wid], wid);
+        const tasks = Object.values(d.weeks[wid].days || {}).flatMap(day => day.tasks || []);
+        if (tasks.length > 0 && tasks.every(t => !taskText(t))) {
+          d.weeks[wid] = buildWeekFromSeed(wid, WEEK_SEED[wid]);
+          d.weeks[wid]._seeded = true;
+          persist(d);
+        }
+      }
+      const wk = d.weeks[wid];
+      if (wk.focus && !wk.focusIds) {
+        wk.focusIds = wk.focus.filter(f => f.on).map(f => f.id);
+        delete wk.focus;
+        persist(d);
+      }
+      if (!wk.focusIds) wk.focusIds = [];
+      if (!wk.nextFocusIds) wk.nextFocusIds = [];
+      normalizeWeekDays(wk, wid);
+      ensureWeekFocus(wk, wid);
+      persist(d);
+      return wk;
+    }
+
+    function krChipHtml(id, zone, wid) {
+      const k = findKr(id);
+      if (!k) return '';
+      return `<span class="kr-chip">
+        <b>${k.id}</b> ${esc(k.text)} <span class="ns-tag">${oLabel(k.ns)}</span>
+        <button type="button" class="chip-remove" onclick="removeFocusKr('${wid}','${jsEsc(id)}','${zone}')" title="移除">×</button>
+      </span>`;
+    }
+
+    function renderKrFocusZones(wid) {
+      const wk = getWeekData(wid);
+      const nextWid = getNextWeekId(wid);
+      const nextLabel = nextWid ? WEEKS.find(w => w.id === nextWid).label : '';
+      document.getElementById('krFocusZones').innerHTML = `
+        <div class="drop-zone focus-zone">
+          <div class="zone-header">
+            <span class="drop-zone-title">本周做功 · ${esc(WEEKS.find(w => w.id === wid)?.label || wid)}</span>
+            <button type="button" class="zone-add-btn" onclick="openKrPicker('focus')" title="添加 KR">+</button>
+          </div>
+          ${wk.focusIds.map(id => krChipHtml(id, 'focus', wid)).join('') || '<span class="hint">本周无 DDL · 点 + 添加</span>'}
+        </div>
+        <div class="drop-zone focus-zone" style="border-color:var(--border);background:var(--bg)">
+          <div class="zone-header">
+            <span class="drop-zone-title">下周做功${nextLabel ? ' · ' + esc(nextLabel) : ''}</span>
+            <button type="button" class="zone-add-btn" onclick="openKrPicker('next')" title="添加 KR">+</button>
+          </div>
+          ${(wk.nextFocusIds || []).map(id => krChipHtml(id, 'next', wid)).join('') || '<span class="hint">点 + 从全部 O 选择</span>'}
+        </div>`;
+    }
+
+    function removeFocusKr(wid, krId, zone) {
+      const d = load();
+      const wk = d.weeks[wid];
+      const w = getWeekRange(wid);
+      if (zone === 'next') {
+        const nw = getWeekRange(getNextWeekId(wid));
+        if (nw && krIdsForWeekRange(nw.start, nw.end).includes(krId)) {
+          wk.ddlNextRemoved = [...new Set([...(wk.ddlNextRemoved || []), krId])];
+        }
+        wk.nextFocusIds = (wk.nextFocusIds || []).filter(x => x !== krId);
+      } else {
+        if (w && krIdsForWeekRange(w.start, w.end).includes(krId)) {
+          wk.ddlRemoved = [...new Set([...(wk.ddlRemoved || []), krId])];
+        }
+        wk.focusIds = (wk.focusIds || []).filter(x => x !== krId);
+      }
+      persist(d);
+      renderExecute();
+    }
+
+    function openKrPicker(target) {
+      krPickerTarget = target;
+      const wid = document.getElementById('execWeek').value;
+      const wk = getWeekData(wid);
+      const inZone = new Set(target === 'next' ? (wk.nextFocusIds || []) : wk.focusIds);
+      document.getElementById('krPickerHint').textContent =
+        target === 'next' ? '多选 KR 加入「下周做功」' : '多选 KR 加入「本周做功」';
+      document.getElementById('krPickerBody').innerHTML = getObjectives().map(o => `
+        <div class="picker-o">
+          <div class="picker-o-title">${oLabel(o.id)} · ${esc(o.name)}</div>
+          ${sortKrsByDdl(o.krs).map(k => {
+            const inList = inZone.has(k.id);
+            return `<label class="picker-kr ${inList ? 'disabled' : ''}">
+              <input type="checkbox" value="${attrEsc(k.id)}" ${inList ? 'disabled checked' : ''} />
+              <span>${esc(k.text)} · ${fmtDdl(k.ddl)}</span>
+            </label>`;
+          }).join('')}
+        </div>`).join('');
+      document.getElementById('krPickerModal').classList.add('open');
+    }
+
+    function closeKrPicker() { document.getElementById('krPickerModal').classList.remove('open'); }
+
+    function confirmKrPicker() {
+      const wid = document.getElementById('execWeek').value;
+      const selected = [...document.querySelectorAll('#krPickerBody input[type=checkbox]:checked:not(:disabled)')]
+        .map(i => i.value);
+      if (!selected.length) { toast('请先勾选 KR'); return; }
+      const d = load();
+      const wk = d.weeks[wid];
+      const key = krPickerTarget === 'next' ? 'nextFocusIds' : 'focusIds';
+      wk[key] = sanitizeFocusIds([...(wk[key] || []), ...selected]);
+      persist(d);
+      closeKrPicker();
+      renderExecute();
+      toast(`已添加 ${selected.length} 个 KR`);
+    }
+
+    function onDragEnd(e) {
+      e.target.classList.remove('dragging');
+      document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+      dragState = null;
+    }
+
+    function dayKeyAt(wid, di) {
+      return Object.keys(load().weeks[wid].days)[di];
+    }
+
+    function onTaskDragStart(e, wid, di, ti) {
+      if (e.target.closest('.task-btns') || e.target.classList.contains('task-check') || e.target.classList.contains('task-text-edit')) {
+        e.preventDefault();
+        return;
+      }
+      dragState = { type: 'task', wid, dayKey: dayKeyAt(wid, di), ti };
+      e.currentTarget.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    }
+
+    function onTaskDrop(e, wid, di) {
+      e.preventDefault();
+      e.currentTarget.classList.remove('drag-over');
+      if (!dragState || dragState.type !== 'task') return;
+      const toDay = dayKeyAt(wid, di);
+      const { dayKey: fromDay, ti } = dragState;
+      if (fromDay === toDay) return;
+      const d = load();
+      const task = d.weeks[wid].days[fromDay].tasks.splice(ti, 1)[0];
+      d.weeks[wid].days[toDay].tasks.push(task);
+      taskEditBackup = null;
+      persist(d); renderDayBoard(wid); toast('任务已移动');
+    }
+
+    function renderDayBoard(wid) {
+      const wk = getWeekData(wid);
+      const dayKeys = Object.keys(wk.days);
+      document.getElementById('dayBoard').innerHTML = dayKeys.map((dk, di) => {
+        const day = wk.days[dk];
+        const tasks = (day.tasks || []).map((t, ti) => {
+          const text = taskText(t);
+          const editing = taskEditBackup?.wid === wid && taskEditBackup?.di === di && taskEditBackup?.ti === ti;
+          return `<div class="task-item ${t.done ? 'done' : ''} ${editing ? 'editing' : ''}" draggable="${editing ? 'false' : 'true'}"
+            ondragstart="onTaskDragStart(event,'${wid}',${di},${ti})" ondragend="onDragEnd(event)">
+            <div class="task-body">
+              <span class="task-text">${esc(text) || '（空任务）'}</span>
+              <input class="task-text-edit" value="${attrEsc(text)}" onkeydown="taskEditKeydown(event,'${wid}',${di},${ti})" />
+            </div>
+            <div class="task-btns" onmousedown="event.stopPropagation()">
+              <button type="button" class="task-edit-btn" onclick="editTaskInline('${wid}',${di},${ti},this)" title="编辑">${editing ? '✓' : '✎'}</button>
+              ${editing ? `<button type="button" class="task-cancel-btn" onclick="cancelEditTask('${wid}',${di},${ti},event)" title="撤回编辑">↩</button>` : ''}
+              <button type="button" class="task-del-btn" onclick="deleteTask('${wid}',${di},${ti},event)" title="删除">✕</button>
+            </div>
+            <input type="checkbox" class="task-check" ${t.done ? 'checked' : ''}
+              onmousedown="event.stopPropagation()" onchange="toggleTask('${wid}',${di},${ti},this.checked)" />
+          </div>`;
+        }).join('');
+        const did = dayId(wid, dk);
+        return `<div class="day-col" data-day="${esc(dk)}"
+          ondragover="event.preventDefault();this.classList.add('drag-over')"
+          ondragleave="this.classList.remove('drag-over')"
+          ondrop="onTaskDrop(event,'${wid}',${di})">
+          <div class="day-col-header">
+            <div class="day-tag">${esc(dk)}</div>
+            <input class="day-focus-input" value="${attrEsc(day.focus||'')}" placeholder="今日焦点"
+              onchange="saveDayFocus('${wid}','${jsEsc(dk)}',this.value)" />
+          </div>
+          ${tasks || '<p class="hint">暂无任务 · 下方添加</p>'}
+          <div class="day-add-row">
+            <input id="${did}" placeholder="新任务…" onkeydown="if(event.key==='Enter')addDayTask('${wid}','${jsEsc(dk)}')" />
+            <button type="button" class="btn secondary small" onclick="addDayTask('${wid}','${jsEsc(dk)}')">+</button>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    function taskEditKeydown(e, wid, di, ti) {
+      if (e.key === 'Enter') { e.preventDefault(); saveEditTask(wid, di, ti); }
+      if (e.key === 'Escape') { e.preventDefault(); cancelEditTask(wid, di, ti, e); }
+    }
+
+    function saveEditTask(wid, di, ti) {
+      const dk = dayKeyAt(wid, di);
+      const d = load();
+      const col = document.getElementById('dayBoard');
+      const item = col.querySelectorAll('.day-col')[di]?.querySelectorAll('.task-item')[ti];
+      const inp = item?.querySelector('.task-text-edit');
+      if (inp) d.weeks[wid].days[dk].tasks[ti].text = inp.value.trim() || taskText(d.weeks[wid].days[dk].tasks[ti]);
+      persist(d);
+      taskEditBackup = null;
+      renderDayBoard(wid);
+      toast('已保存');
+    }
+
+    function editTaskInline(wid, di, ti, btn) {
+      const item = btn.closest('.task-item');
+      if (item.classList.contains('editing')) {
+        saveEditTask(wid, di, ti);
+        return;
+      }
+      const dk = dayKeyAt(wid, di);
+      const d = load();
+      taskEditBackup = { wid, di, ti, text: taskText(d.weeks[wid].days[dk].tasks[ti]) };
+      renderDayBoard(wid);
+      const inp = document.getElementById('dayBoard').querySelectorAll('.day-col')[di]?.querySelector('.task-item.editing .task-text-edit');
+      if (inp) { inp.focus(); inp.select(); }
+    }
+
+    function cancelEditTask(wid, di, ti, e) {
+      if (e) { e.preventDefault(); e.stopPropagation(); }
+      const dk = dayKeyAt(wid, di);
+      if (taskEditBackup && taskEditBackup.wid === wid && taskEditBackup.di === di && taskEditBackup.ti === ti) {
+        const d = load();
+        d.weeks[wid].days[dk].tasks[ti].text = taskEditBackup.text;
+        persist(d);
+      }
+      taskEditBackup = null;
+      renderDayBoard(wid);
+      toast('已撤回');
+    }
+
+    function deleteTask(wid, di, ti, e) {
+      if (e) e.stopPropagation();
+      const dk = dayKeyAt(wid, di);
+      if (taskEditBackup?.wid === wid && taskEditBackup?.di === di && taskEditBackup?.ti === ti) {
+        taskEditBackup = null;
+      }
+      const d = load();
+      d.weeks[wid].days[dk].tasks.splice(ti, 1);
+      persist(d);
+      renderDayBoard(wid);
+      toast('已删除');
+    }
+
+    function saveDayFocus(wid, dk, val) {
+      const d = load(); d.weeks[wid].days[dk].focus = val; persist(d);
+    }
+
+    function toggleTask(wid, di, ti, val) {
+      const dk = dayKeyAt(wid, di);
+      const d = load(); d.weeks[wid].days[dk].tasks[ti].done = val; persist(d);
+      renderDayBoard(wid);
+    }
+
+    function addDayTask(wid, dk) {
+      const inp = document.getElementById(dayId(wid, dk));
+      const text = inp.value.trim();
+      if (!text) return;
+      const d = load();
+      d.weeks[wid].days[dk].tasks.push({ id: 't' + Date.now(), text, done: false });
+      persist(d); inp.value = ''; renderDayBoard(wid); toast('已添加');
+    }
+
+    function renderExecute() {
+      const wid = document.getElementById('execWeek').value;
+      renderKrFocusZones(wid);
+      renderDayBoard(wid);
+      loadReview();
+    }
+
+    function saveBody() {
+      const date = document.getElementById('b_date').value;
+      if (date < BODY_START) return toast('身体记录从 06-21 开始');
+      const entry = {
+        date, waist: num('b_waist'), hip: num('b_hip'), thigh: num('b_thigh'),
+        arm: num('b_arm'), bf: num('b_bf'), note: document.getElementById('b_note').value,
+      };
+      const d = load(); d.body = d.body || [];
+      const i = d.body.findIndex(x => x.date === date);
+      if (i >= 0) d.body[i] = entry; else d.body.push(entry);
+      d.body.sort((a,b) => a.date.localeCompare(b.date));
+      persist(d); toast('已保存'); renderProgress();
+    }
+    function saveLift() {
+      const d = load(); d.lifts = d.lifts || [];
+      d.lifts.push({
+        date: document.getElementById('l_date').value,
+        ex: document.getElementById('l_ex').value,
+        kg: document.getElementById('l_kg').value,
+        reps: document.getElementById('l_reps').value,
+      });
+      persist(d); toast('已添加'); renderProgress();
+    }
+    function num(id) { const v = parseFloat(document.getElementById(id).value); return isNaN(v) ? null : v; }
+
+    function saveReview() {
+      const wid = document.getElementById('execWeek').value;
+      const d = load(); d.reviews = d.reviews || {};
+      d.reviews[wid] = {
+        train: +document.getElementById('r_train').value || 0,
+        xhs: +document.getElementById('r_xhs').value || 0,
+        outreach: +document.getElementById('r_outreach').value || 0,
+        interview: +document.getElementById('r_interview').value || 0,
+        kr_done: document.getElementById('r_kr_done').value,
+        q1: document.getElementById('r_q1').value, q2: document.getElementById('r_q2').value, q3: document.getElementById('r_q3').value,
+        finance: document.getElementById('r_finance').checked, risk: document.getElementById('r_risk').checked,
+      };
+      persist(d); toast('Review 已保存');
+    }
+    function loadReview() {
+      const r = (load().reviews || {})[document.getElementById('execWeek').value] || {};
+      const map = { r_train: 'train', r_xhs: 'xhs', r_outreach: 'outreach', r_interview: 'interview', r_kr_done: 'kr_done', r_q1: 'q1', r_q2: 'q2', r_q3: 'q3' };
+      Object.entries(map).forEach(([id, key]) => { const el = document.getElementById(id); if (el) el.value = r[key] ?? ''; });
+      document.getElementById('r_finance').checked = !!r.finance;
+      document.getElementById('r_risk').checked = !!r.risk;
+    }
+
+    function calcFinancePreview() {
+      const inc = (+document.getElementById('f_in').value || 0) || (+document.getElementById('f_nc').value || 0) + (+document.getElementById('f_other').value || 0);
+      const exp = (+document.getElementById('f_live').value || 0) + (+document.getElementById('f_big').value || 0);
+      document.getElementById('f_save').textContent = inc ? (inc - exp).toLocaleString() : '—';
+      document.getElementById('f_rate').textContent = inc ? (((inc-exp)/inc)*100).toFixed(0) : '—';
+    }
+    function saveFinance() {
+      const w = document.getElementById('finWeek').value;
+      const nc = +document.getElementById('f_nc').value || 0;
+      const other = +document.getElementById('f_other').value || 0;
+      let inc = +document.getElementById('f_in').value || 0;
+      if (!inc) inc = nc + other;
+      const live = +document.getElementById('f_live').value || 0;
+      const big = +document.getElementById('f_big').value || 0;
+      const d = load(); d.finance = d.finance || {};
+      d.finance[w] = { income: inc, nc, other, live, big, net: +document.getElementById('f_net').value || null,
+        save: inc-live-big, rate: inc ? ((inc-live-big)/inc*100) : 0, note: document.getElementById('f_note').value };
+      persist(d); toast('已保存'); renderFinTable(); loadFinance();
+    }
+    function loadFinance() {
+      const r = (load().finance || {})[document.getElementById('finWeek').value] || {};
+      ['f_in','f_nc','f_other','f_live','f_big','f_net','f_note'].forEach(id => {
+        const key = id.slice(2);
+        document.getElementById(id).value = r[key === 'in' ? 'income' : key] ?? '';
+      });
+      calcFinancePreview();
+    }
+    function renderFinTable() {
+      const fin = load().finance || {};
+      const cur = document.getElementById('finWeek').value;
+      document.querySelector('#finTable tbody').innerHTML = WEEKS.map(w => {
+        const f = fin[w.id];
+        const cls = w.id === cur ? 'active-row clickable' : 'clickable';
+        if (!f) return `<tr class="${cls}" onclick="pickFinWeek('${w.id}')"><td>${w.id}</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>`;
+        const exp = (f.live||0)+(f.big||0);
+        return `<tr class="${cls}" onclick="pickFinWeek('${w.id}')"><td>${w.id}</td><td>${f.income?.toLocaleString()??'—'}</td><td>${exp.toLocaleString()}</td><td>${f.save?.toLocaleString()??'—'}</td><td>${f.rate?.toFixed(0)??'—'}</td><td>${f.net?.toLocaleString()??'—'}</td></tr>`;
+      }).join('');
+    }
+    function pickFinWeek(wid) { document.getElementById('finWeek').value = wid; loadFinance(); renderFinTable(); }
+
+    function exportData() {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([JSON.stringify(load(), null, 2)]));
+      a.download = `gap90-${TODAY}.json`; a.click(); toast('已导出');
+    }
+    async function copyExport() {
+      try {
+        await navigator.clipboard.writeText(JSON.stringify(load(), null, 2));
+        toast('JSON 已复制到剪贴板');
+      } catch {
+        exportData();
+        toast('无法复制，已改为下载文件');
+      }
+    }
+    function renderSyncMeta() {
+      const el = document.getElementById('syncMeta');
+      if (!el) return;
+      const u = load()._updatedAt;
+      el.textContent = u ? `本机最后保存：${new Date(u).toLocaleString('zh-CN')}` : '本机尚无保存记录';
+    }
+    function importData(e) {
+      const f = e.target.files[0]; if (!f) return;
+      const r = new FileReader();
+      r.onload = () => { try { localStorage.setItem(KEY, r.result); init(); toast('导入成功'); } catch { toast('失败'); } };
+      r.readAsText(f); e.target.value = '';
+    }
+
+    function initSelects() {
+      const curWeek = getCurrentWeekId();
+      ['execWeek','finWeek'].forEach(sid => {
+        const el = document.getElementById(sid);
+        el.innerHTML = '';
+        WEEKS.forEach(w => {
+          const o = document.createElement('option');
+          o.value = w.id; o.textContent = w.label;
+          if (sid === 'execWeek' && w.id === curWeek) o.selected = true;
+          el.appendChild(o);
+        });
+        el.addEventListener('change', () => {
+          if (sid === 'execWeek') renderExecute();
+          if (sid === 'finWeek') { loadFinance(); renderFinTable(); }
+        });
+      });
+      ['f_in','f_nc','f_other','f_live','f_big'].forEach(id => document.getElementById(id).addEventListener('input', calcFinancePreview));
+    }
+
+    function initHash() {
+      const h = (location.hash || '#objective').slice(1);
+      const sub = h.split('-');
+      if (SECTIONS.includes(sub[0])) {
+        switchSection(sub[0]);
+        if (sub[0] === 'progress' && sub[1]) {
+          const d = load();
+          d.compareKeys = [sub[1]];
+          persist(d);
+          renderProgress();
+        }
+      } else switchSection('objective');
+      window.addEventListener('hashchange', () => {
+        const hh = (location.hash || '#objective').slice(1).split('-');
+        if (SECTIONS.includes(hh[0])) {
+          switchSection(hh[0]);
+          if (hh[0] === 'progress' && hh[1]) setProgressView(hh[1]);
+        }
+      });
+    }
+
+    function init() {
+      renderObjectives();
+      renderProgressSubNav();
+      initSelects();
+      document.getElementById('mainNav').addEventListener('click', e => {
+        if (e.target.tagName === 'BUTTON') switchSection(e.target.dataset.section);
+      });
+      initHash();
+      renderExecute();
+      loadFinance();
+      renderFinTable();
+      renderSyncMeta();
+    }
+    init();
+  </script>
+</body>
+</html>
